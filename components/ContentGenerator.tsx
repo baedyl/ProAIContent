@@ -99,17 +99,53 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
     toast.success('Content downloaded!')
   }
 
-  const handleSave = () => {
-    // In a real app, this would save to a database
-    const savedContent = JSON.parse(localStorage.getItem('savedContent') || '[]')
-    savedContent.push({
-      id: Date.now(),
-      type: contentType,
-      content: generatedContent,
-      date: new Date().toISOString()
-    })
-    localStorage.setItem('savedContent', JSON.stringify(savedContent))
-    toast.success('Content saved to your projects!')
+  const handleSave = async () => {
+    try {
+      // First, try to save to database (if authenticated)
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.topic || 'Untitled Project',
+          content_type: contentType,
+          content: generatedContent,
+          keywords: formData.keywords || null,
+          metadata: {
+            tone: formData.tone,
+            style: formData.style,
+            length: formData.length,
+            personaId: formData.personaId,
+          }
+        }),
+      })
+
+      if (response.ok) {
+        toast.success('Content saved to your account!')
+        return
+      }
+
+      // Fallback to localStorage if not authenticated
+      const savedContent = JSON.parse(localStorage.getItem('savedContent') || '[]')
+      savedContent.push({
+        id: Date.now(),
+        type: contentType,
+        content: generatedContent,
+        date: new Date().toISOString()
+      })
+      localStorage.setItem('savedContent', JSON.stringify(savedContent))
+      toast.success('Content saved locally! Sign in to save to your account.')
+    } catch (error) {
+      // Fallback to localStorage on error
+      const savedContent = JSON.parse(localStorage.getItem('savedContent') || '[]')
+      savedContent.push({
+        id: Date.now(),
+        type: contentType,
+        content: generatedContent,
+        date: new Date().toISOString()
+      })
+      localStorage.setItem('savedContent', JSON.stringify(savedContent))
+      toast.success('Content saved locally!')
+    }
   }
 
   return (

@@ -6,6 +6,7 @@ import Dashboard from '@/components/Dashboard'
 import ContentGenerator from '@/components/ContentGenerator'
 import ProjectsManager from '@/components/ProjectsManager'
 import Sidebar from '@/components/Sidebar'
+import UserMenu from '@/components/UserMenu'
 
 export default function Home() {
   const [selectedContentType, setSelectedContentType] = useState<string | null>(null)
@@ -51,15 +52,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary-50 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-primary-700">98 credits</span>
-              </div>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </button>
+              <UserMenu />
             </div>
           </div>
         </div>
