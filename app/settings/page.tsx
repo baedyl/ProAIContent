@@ -92,32 +92,32 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold gradient-text mb-2">Settings</h1>
-          <p className="text-gray-600">Customize your content generation preferences</p>
+          <h1 className="text-4xl font-semibold text-slate-900 mb-2">Workspace settings</h1>
+          <p className="text-slate-500">Refine tone, personas, and automation defaults for your Wand Wiser studio.</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-effect rounded-2xl p-8 space-y-8"
+          className="rounded-3xl border border-slate-200 bg-white/95 p-8 space-y-8 shadow-sm"
         >
           {/* Account Section */}
           <div>
             <div className="flex items-center gap-3 mb-4">
               <FaUser className="text-primary-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Account</h2>
+              <h2 className="text-2xl font-semibold text-slate-900">Account</h2>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Email
                 </label>
                 <input
@@ -131,15 +131,15 @@ export default function SettingsPage() {
           </div>
 
           {/* Default Preferences Section */}
-          <div className="pt-8 border-t border-gray-200">
+          <div className="pt-8 border-t border-slate-200">
             <div className="flex items-center gap-3 mb-4">
               <FaCog className="text-primary-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Default Preferences</h2>
+              <h2 className="text-2xl font-semibold text-slate-900">Default preferences</h2>
             </div>
             <div className="space-y-4">
               {/* Preferred Persona */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Preferred Writer Persona
                 </label>
                 <select
@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
               {/* Default Tone */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Default Tone
                 </label>
                 <select
@@ -175,7 +175,7 @@ export default function SettingsPage() {
 
               {/* Default Style */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Default Writing Style
                 </label>
                 <select
@@ -193,7 +193,7 @@ export default function SettingsPage() {
 
               {/* Default Length */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Default Content Length
                 </label>
                 <select
@@ -212,7 +212,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Save Button */}
-          <div className="pt-6 border-t border-gray-200">
+          <div className="pt-6 border-t border-slate-200">
             <button
               onClick={handleSave}
               disabled={isSaving}

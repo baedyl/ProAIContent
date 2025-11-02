@@ -1,6 +1,6 @@
 # 🎯 Supabase Setup Guide
 
-Complete guide to set up authentication and database for ProAIContent.
+Complete guide to set up authentication and database for Wand Wiser.
 
 ---
 
@@ -27,7 +27,7 @@ Visit https://supabase.com/ and sign up/log in
 ### 2. Create New Project
 - Click "New Project"
 - Choose organization
-- Enter project name: "ProAIContent"
+- Enter project name: "Wand Wiser"
 - Set database password (save this!)
 - Choose region (closest to you)
 - Click "Create Project"

@@ -1,6 +1,6 @@
 # ⚡ Quick Start Guide
 
-Get ProAIContent up and running in 5 minutes!
+Get Wand Wiser up and running in 5 minutes!
 
 ## 🎯 What You'll Need
 

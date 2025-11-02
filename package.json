@@ -1,7 +1,7 @@
 {
-  "name": "proaicontent",
+  "name": "wand-wiser",
   "version": "1.0.0",
-  "description": "Advanced AI Content Generation Platform - Create SEO-optimized, humanized content in seconds",
+  "description": "Wand Wiser – AI content studio for SEO-optimized, humanized storytelling",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

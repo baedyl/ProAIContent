@@ -22,6 +22,7 @@ export const config = {
     '/dashboard/:path*',
     '/settings/:path*',
     '/api/projects/:path*',
+    '/api/contents/:path*',
     '/api/settings/:path*',
   ],
 }

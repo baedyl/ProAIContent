@@ -1,10 +1,10 @@
 # 🔌 API Documentation
 
-Complete API reference for ProAIContent.
+Complete API reference for Wand Wiser.
 
 ## Overview
 
-ProAIContent uses Next.js API Routes for serverless API functionality. All API endpoints are located in `/app/api/`.
+Wand Wiser uses Next.js API Routes for serverless API functionality. All API endpoints are located in `/app/api/`.
 
 ---
 

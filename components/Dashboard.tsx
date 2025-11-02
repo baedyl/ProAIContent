@@ -106,10 +106,10 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
         className="text-center space-y-4"
       >
         <h2 className="text-5xl font-bold gradient-text">
-          Pour bien commencer
+          Welcome back to your Wand Wiser studio
         </h2>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Choose your content type and let our advanced AI create unique, SEO-optimized, and humanized content that ranks and converts
+        <p className="text-xl text-slate-500 max-w-3xl mx-auto">
+          Launch high-performing articles, product reviews, and conversion assets with curated workflows, SERP intelligence, and guided optimization.
         </p>
       </motion.div>
 
@@ -127,15 +127,16 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onContentTypeSelect(type.id)}
-            className="glass-effect rounded-2xl p-6 cursor-pointer card-hover group"
+            className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer group"
           >
-            <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
+            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white mb-4 group-hover:scale-105 transition-transform duration-300`}
+            >
               {type.icon}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{type.title}</h3>
-            <p className="text-gray-600 text-sm mb-4">{type.description}</p>
-            <div className="flex items-center text-primary-600 font-semibold group-hover:gap-2 transition-all duration-300">
-              <span>Commencer</span>
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">{type.title}</h3>
+            <p className="text-slate-500 text-sm leading-relaxed mb-6">{type.description}</p>
+            <div className="flex items-center text-indigo-600 font-semibold group-hover:gap-2 transition-all duration-300">
+              <span>Launch workflow</span>
               <svg className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -149,10 +150,10 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="glass-effect rounded-2xl p-8"
+        className="rounded-3xl border border-slate-200 bg-white p-10 shadow-sm"
       >
         <h3 className="text-2xl font-bold text-center mb-8 gradient-text">
-          Why Choose ProAIContent?
+          Why teams choose Wand Wiser
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
@@ -163,11 +164,11 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
               transition={{ delay: 0.5 + index * 0.1 }}
               className="text-center space-y-3"
             >
-              <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-200/60">
                 {feature.icon}
               </div>
-              <h4 className="font-bold text-gray-800">{feature.title}</h4>
-              <p className="text-sm text-gray-600">{feature.description}</p>
+              <h4 className="font-semibold text-slate-900">{feature.title}</h4>
+              <p className="text-sm text-slate-500 leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </div>
@@ -180,17 +181,17 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
         transition={{ delay: 0.6 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
-        <div className="glass-effect rounded-2xl p-6 text-center">
-          <div className="text-4xl font-bold gradient-text mb-2">10,000+</div>
-          <div className="text-gray-600">Content Pieces Generated</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <div className="text-4xl font-bold text-slate-900 mb-2">10,000+</div>
+          <div className="text-slate-500">Content pieces generated</div>
         </div>
-        <div className="glass-effect rounded-2xl p-6 text-center">
-          <div className="text-4xl font-bold gradient-text mb-2">95%</div>
-          <div className="text-gray-600">AI Detection Pass Rate</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <div className="text-4xl font-bold text-slate-900 mb-2">95%</div>
+          <div className="text-slate-500">AI detection pass rate</div>
         </div>
-        <div className="glass-effect rounded-2xl p-6 text-center">
-          <div className="text-4xl font-bold gradient-text mb-2">4.8/5</div>
-          <div className="text-gray-600">Average User Rating</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <div className="text-4xl font-bold text-slate-900 mb-2">4.8/5</div>
+          <div className="text-slate-500">Average user rating</div>
         </div>
       </motion.div>
     </div>

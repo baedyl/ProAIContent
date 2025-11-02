@@ -17,21 +17,21 @@ export default function ContentPreview({ content }: ContentPreviewProps) {
       .map((line, index) => {
         // Headers
         if (line.startsWith('# ')) {
-          return <h1 key={index} className="text-3xl font-bold text-gray-900 mt-6 mb-4">{line.slice(2)}</h1>
+          return <h1 key={index} className="text-3xl font-semibold text-slate-900 mt-6 mb-4">{line.slice(2)}</h1>
         }
         if (line.startsWith('## ')) {
-          return <h2 key={index} className="text-2xl font-bold text-gray-900 mt-5 mb-3">{line.slice(3)}</h2>
+          return <h2 key={index} className="text-2xl font-semibold text-slate-900 mt-5 mb-3">{line.slice(3)}</h2>
         }
         if (line.startsWith('### ')) {
-          return <h3 key={index} className="text-xl font-bold text-gray-900 mt-4 mb-2">{line.slice(4)}</h3>
+          return <h3 key={index} className="text-xl font-semibold text-slate-900 mt-4 mb-2">{line.slice(4)}</h3>
         }
         
         // Lists
         if (line.startsWith('- ') || line.startsWith('* ')) {
-          return <li key={index} className="text-gray-700 ml-6 mb-1">{line.slice(2)}</li>
+          return <li key={index} className="text-slate-600 ml-6 mb-1">{line.slice(2)}</li>
         }
         if (/^\d+\.\s/.test(line)) {
-          return <li key={index} className="text-gray-700 ml-6 mb-1 list-decimal">{line.replace(/^\d+\.\s/, '')}</li>
+          return <li key={index} className="text-slate-600 ml-6 mb-1 list-decimal">{line.replace(/^\d+\.\s/, '')}</li>
         }
         
         // Bold text
@@ -46,7 +46,7 @@ export default function ContentPreview({ content }: ContentPreviewProps) {
         return (
           <p 
             key={index} 
-            className="text-gray-700 mb-3 leading-relaxed"
+            className="text-slate-600 mb-3 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: formattedLine }}
           />
         )
@@ -60,13 +60,13 @@ export default function ContentPreview({ content }: ContentPreviewProps) {
       className="space-y-4"
     >
       {/* Toggle View */}
-      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-200">
+      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-200">
         <button
           onClick={() => setShowFormatted(true)}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
             showFormatted 
-              ? 'bg-primary-600 text-white' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200/60' 
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
           }`}
         >
           Formatted
@@ -75,8 +75,8 @@ export default function ContentPreview({ content }: ContentPreviewProps) {
           onClick={() => setShowFormatted(false)}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
             !showFormatted 
-              ? 'bg-primary-600 text-white' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200/60' 
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
           }`}
         >
           Raw
@@ -90,31 +90,31 @@ export default function ContentPreview({ content }: ContentPreviewProps) {
             {formatContent(content)}
           </div>
         ) : (
-          <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono bg-gray-50 p-4 rounded-lg">
+          <pre className="whitespace-pre-wrap text-sm text-slate-600 font-mono bg-slate-50 border border-slate-200 p-4 rounded-xl">
             {content}
           </pre>
         )}
       </div>
 
       {/* Content Stats */}
-      <div className="mt-6 pt-4 border-t border-gray-200 grid grid-cols-3 gap-4 text-center">
+      <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-3 gap-4 text-center">
         <div>
-          <div className="text-2xl font-bold text-primary-600">
+          <div className="text-2xl font-semibold text-indigo-600">
             {content.split(/\s+/).filter(w => w.length > 0).length}
           </div>
-          <div className="text-xs text-gray-500">Words</div>
+          <div className="text-xs text-slate-500">Words</div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-accent-600">
+          <div className="text-2xl font-semibold text-purple-500">
             {content.length}
           </div>
-          <div className="text-xs text-gray-500">Characters</div>
+          <div className="text-xs text-slate-500">Characters</div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-semibold text-emerald-500">
             {Math.ceil(content.split(/\s+/).filter(w => w.length > 0).length / 200)}
           </div>
-          <div className="text-xs text-gray-500">Min Read</div>
+          <div className="text-xs text-slate-500">Min Read</div>
         </div>
       </div>
     </motion.div>

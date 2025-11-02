@@ -1,6 +1,6 @@
-# 🚀 ProAIContent Setup Guide
+# 🚀 Wand Wiser Setup Guide
 
-Complete step-by-step guide to get ProAIContent running on your machine.
+Complete step-by-step guide to get Wand Wiser running on your machine.
 
 ## 📋 Prerequisites
 
@@ -70,7 +70,7 @@ The application will start at: **http://localhost:3000**
 ### Step 4: Verify Installation
 
 1. Open http://localhost:3000 in your browser
-2. You should see the ProAIContent dashboard
+2. You should see the Wand Wiser dashboard
 3. Try generating some content to verify the OpenAI integration
 
 ## 🏗️ Build for Production
@@ -121,7 +121,7 @@ Content generation uses OpenAI's API which charges per token:
 
 ## 📱 Browser Compatibility
 
-ProAIContent works best on:
+Wand Wiser works best on:
 - ✅ Chrome 90+
 - ✅ Firefox 88+
 - ✅ Safari 14+
@@ -180,7 +180,7 @@ npm run dev
 ## 📊 Project Structure
 
 ```
-ProAIContent/
+Wand Wiser/
 ├── app/                      # Next.js app directory
 │   ├── api/                  # API routes
 │   │   └── generate/         # Content generation endpoint

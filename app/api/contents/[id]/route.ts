@@ -3,16 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin, logUsage } from '@/lib/supabase'
 
-function createSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-}
-
 /**
- * GET - Fetch a single project
+ * GET - Fetch a single content item
  */
 export async function GET(
   request: NextRequest,
@@ -20,13 +12,13 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data, error } = await supabaseAdmin
-      .from('projects')
+      .from('project_contents')
       .select('*')
       .eq('id', params.id)
       .eq('user_id', session.user.id)
@@ -34,29 +26,23 @@ export async function GET(
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+        return NextResponse.json({ error: 'Content not found' }, { status: 404 })
       }
-
-      if (error.code === '23505') {
-        return NextResponse.json({ error: 'A project with this name already exists' }, { status: 409 })
-      }
-
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ project: data })
-
+    return NextResponse.json({ content: data })
   } catch (error: any) {
-    console.error('Project GET error:', error)
+    console.error('Content GET error:', error)
     return NextResponse.json(
-      { error: 'An error occurred while fetching the project' },
+      { error: 'An error occurred while fetching the content item' },
       { status: 500 }
     )
   }
 }
 
 /**
- * PATCH - Update a project
+ * PATCH - Update a content item
  */
 export async function PATCH(
   request: NextRequest,
@@ -64,25 +50,28 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const updates = await request.json()
 
-    // Remove fields that shouldn't be updated
     delete updates.id
     delete updates.user_id
-    delete updates.created_at
     delete updates.project_id
+    delete updates.created_at
 
-    if (updates.name) {
-      updates.slug = createSlug(updates.slug || updates.name)
+    if (updates.is_published && !updates.published_at) {
+      updates.published_at = new Date().toISOString()
+    }
+
+    if (updates.is_published === false) {
+      updates.published_at = null
     }
 
     const { data, error } = await supabaseAdmin
-      .from('projects')
+      .from('project_contents')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', params.id)
       .eq('user_id', session.user.id)
@@ -91,24 +80,23 @@ export async function PATCH(
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+        return NextResponse.json({ error: 'Content not found' }, { status: 404 })
       }
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ project: data })
-
+    return NextResponse.json({ content: data })
   } catch (error: any) {
-    console.error('Project PATCH error:', error)
+    console.error('Content PATCH error:', error)
     return NextResponse.json(
-      { error: 'An error occurred while updating the project' },
+      { error: 'An error occurred while updating the content item' },
       { status: 500 }
     )
   }
 }
 
 /**
- * DELETE - Delete a project
+ * DELETE - Delete a content item
  */
 export async function DELETE(
   request: NextRequest,
@@ -116,13 +104,13 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { error } = await supabaseAdmin
-      .from('projects')
+      .from('project_contents')
       .delete()
       .eq('id', params.id)
       .eq('user_id', session.user.id)
@@ -131,17 +119,16 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Log usage
-    await logUsage(session.user.id, 'project_deleted', 0)
+    await logUsage(session.user.id, 'content_deleted', 0)
 
-    return NextResponse.json({ message: 'Project deleted successfully' })
-
+    return NextResponse.json({ message: 'Content deleted successfully' })
   } catch (error: any) {
-    console.error('Project DELETE error:', error)
+    console.error('Content DELETE error:', error)
     return NextResponse.json(
-      { error: 'An error occurred while deleting the project' },
+      { error: 'An error occurred while deleting the content item' },
       { status: 500 }
     )
   }
 }
+
 

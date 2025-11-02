@@ -34,6 +34,19 @@
 
 ---
 
+### 🧼 If you ran the old schema before todays update
+
+Run this once in the SQL editor to remove the legacy trigger that caused the `Database error creating new user` problem:
+
+```sql
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS handle_new_user();
+```
+
+Then try signing up again.
+
+---
+
 ## Still Not Working?
 
 ### Check Browser Console for Errors:

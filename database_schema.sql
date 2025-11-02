@@ -1,5 +1,5 @@
 -- =============================================
--- ProAIContent Database Schema for Supabase
+-- Wand Wiser Database Schema for Supabase
 -- =============================================
 -- Run this SQL in your Supabase SQL Editor
 
@@ -22,14 +22,34 @@ CREATE TABLE IF NOT EXISTS user_settings (
   UNIQUE(user_id)
 );
 
--- =============================================
--- PROJECTS TABLE (Generated Content)
--- =============================================
+-- Projects describe a workspace (site, brand, etc.) that can contain many contents
 CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  slug TEXT,
+  site_url TEXT,
+  persona TEXT,
+  status TEXT DEFAULT 'active',
+  brief TEXT,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, name)
+);
+
+-- =============================================
+-- PROJECT CONTENTS TABLE (Content items per project)
+-- =============================================
+CREATE TABLE IF NOT EXISTS project_contents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
   content_type TEXT NOT NULL,
+  status TEXT DEFAULT 'draft',
+  is_published BOOLEAN DEFAULT FALSE,
+  published_at TIMESTAMP WITH TIME ZONE,
   content TEXT NOT NULL,
   keywords TEXT,
   metadata JSONB DEFAULT '{}',
@@ -54,7 +74,11 @@ CREATE TABLE IF NOT EXISTS usage_logs (
 CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_projects_content_type ON projects(content_type);
+CREATE INDEX IF NOT EXISTS idx_projects_slug ON projects(user_id, slug);
+CREATE INDEX IF NOT EXISTS idx_project_contents_project_id ON project_contents(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_contents_user_id ON project_contents(user_id);
+CREATE INDEX IF NOT EXISTS idx_project_contents_created_at ON project_contents(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_project_contents_status ON project_contents(status);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_user_id ON usage_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_created_at ON usage_logs(created_at DESC);
 
@@ -65,43 +89,74 @@ CREATE INDEX IF NOT EXISTS idx_usage_logs_created_at ON usage_logs(created_at DE
 -- Enable RLS
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_contents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usage_logs ENABLE ROW LEVEL SECURITY;
 
 -- User Settings Policies
+DROP POLICY IF EXISTS "Users can view their own settings" ON user_settings;
 CREATE POLICY "Users can view their own settings"
   ON user_settings FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own settings" ON user_settings;
 CREATE POLICY "Users can insert their own settings"
   ON user_settings FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own settings" ON user_settings;
 CREATE POLICY "Users can update their own settings"
   ON user_settings FOR UPDATE
   USING (auth.uid() = user_id);
 
 -- Projects Policies
+DROP POLICY IF EXISTS "Users can view their own projects" ON projects;
 CREATE POLICY "Users can view their own projects"
   ON projects FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own projects" ON projects;
 CREATE POLICY "Users can insert their own projects"
   ON projects FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own projects" ON projects;
 CREATE POLICY "Users can update their own projects"
   ON projects FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own projects" ON projects;
 CREATE POLICY "Users can delete their own projects"
   ON projects FOR DELETE
   USING (auth.uid() = user_id);
 
+-- Project Contents Policies
+DROP POLICY IF EXISTS "Users can view their project contents" ON project_contents;
+CREATE POLICY "Users can view their project contents"
+  ON project_contents FOR SELECT
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their project contents" ON project_contents;
+CREATE POLICY "Users can insert their project contents"
+  ON project_contents FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their project contents" ON project_contents;
+CREATE POLICY "Users can update their project contents"
+  ON project_contents FOR UPDATE
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their project contents" ON project_contents;
+CREATE POLICY "Users can delete their project contents"
+  ON project_contents FOR DELETE
+  USING (auth.uid() = user_id);
+
 -- Usage Logs Policies
+DROP POLICY IF EXISTS "Users can view their own usage logs" ON usage_logs;
 CREATE POLICY "Users can view their own usage logs"
   ON usage_logs FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own usage logs" ON usage_logs;
 CREATE POLICY "Users can insert their own usage logs"
   ON usage_logs FOR INSERT
   WITH CHECK (auth.uid() = user_id);
@@ -133,23 +188,12 @@ CREATE TRIGGER update_projects_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Function to create default settings for new users
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO user_settings (user_id)
-  VALUES (NEW.id)
-  ON CONFLICT (user_id) DO NOTHING;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger to auto-create settings for new users
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
+-- Trigger for project contents
+DROP TRIGGER IF EXISTS update_project_contents_updated_at ON project_contents;
+CREATE TRIGGER update_project_contents_updated_at
+  BEFORE UPDATE ON project_contents
   FOR EACH ROW
-  EXECUTE FUNCTION handle_new_user();
+  EXECUTE FUNCTION update_updated_at_column();
 
 -- =============================================
 -- SAMPLE DATA (Optional - for testing)
@@ -157,8 +201,10 @@ CREATE TRIGGER on_auth_user_created
 
 -- Uncomment to add sample data
 /*
-INSERT INTO projects (user_id, title, content_type, content, keywords, metadata) VALUES
-(auth.uid(), 'Sample Blog Post', 'blog', '# Sample Content\n\nThis is a sample blog post.', 'sample, blog', '{"tone": "professional", "style": "informative"}');
+-- Example: create a workspace and its first draft article
+-- INSERT INTO projects (user_id, name, site_url) VALUES (auth.uid(), 'Demo Workspace', 'https://example.com');
+-- INSERT INTO project_contents (project_id, user_id, title, content_type, content)
+-- VALUES ((SELECT id FROM projects WHERE name = 'Demo Workspace' LIMIT 1), auth.uid(), 'Welcome Article', 'blog', 'Hello world!');
 */
 
 -- =============================================
@@ -168,7 +214,7 @@ INSERT INTO projects (user_id, title, content_type, content, keywords, metadata)
 -- Check if tables exist
 SELECT table_name FROM information_schema.tables 
 WHERE table_schema = 'public' 
-AND table_name IN ('user_settings', 'projects', 'usage_logs');
+AND table_name IN ('user_settings', 'projects', 'project_contents', 'usage_logs');
 
 -- Check RLS policies
 SELECT schemaname, tablename, policyname 
@@ -187,11 +233,10 @@ WHERE schemaname = 'public';
 5. Click "Run" to execute
 
 This will create:
-- 3 tables (user_settings, projects, usage_logs)
+- 4 tables (user_settings, projects, project_contents, usage_logs)
 - Indexes for performance
 - Row Level Security policies
 - Triggers for automatic timestamps
-- Auto-creation of default settings for new users
 
 After running, verify by checking:
 - Table Editor to see the new tables

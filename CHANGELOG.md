@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to ProAIContent will be documented in this file.
+All notable changes to Wand Wiser will be documented in this file.
 
 ## [1.0.0] - 2025-10-30
 

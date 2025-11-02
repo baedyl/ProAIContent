@@ -7,9 +7,9 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ProAIContent - Advanced AI Content Generation',
-  description: 'Create SEO-optimized, humanized, and unique content in seconds. Generate blog posts, product reviews, affiliate content and more.',
-  keywords: 'AI content generation, SEO optimization, content writing, blog posts, product reviews',
+  title: 'Wand Wiser - Advanced AI Content Generation Platform',
+  description: 'Wand Wiser crafts SEO-optimized, humanized, and conversion-focused content in seconds. Generate articles, reviews, and affiliate pages with pro-grade workflows.',
+  keywords: 'Wand Wiser, AI content generation, SEO optimization, content writing, blog posts, product reviews',
 }
 
 export default function RootLayout({

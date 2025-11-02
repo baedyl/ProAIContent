@@ -1,6 +1,6 @@
-# 🤝 Contributing to ProAIContent
+# 🤝 Contributing to Wand Wiser
 
-Thank you for considering contributing to ProAIContent! We welcome contributions from everyone.
+Thank you for considering contributing to Wand Wiser! We welcome contributions from everyone.
 
 ## 📋 Table of Contents
 
@@ -129,8 +129,8 @@ We love code contributions! Here's how:
 1. **Fork and clone the repository:**
 
 ```bash
-git clone https://github.com/your-username/ProAIContent.git
-cd ProAIContent
+git clone https://github.com/your-username/Wand Wiser.git
+cd Wand Wiser
 ```
 
 2. **Install dependencies:**
@@ -161,7 +161,7 @@ npm run lint
 ### Project Structure
 
 ```
-ProAIContent/
+Wand Wiser/
 ├── app/                     # Next.js app directory
 │   ├── api/                 # API routes
 │   ├── layout.tsx           # Root layout
@@ -457,7 +457,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-**Thank you for contributing to ProAIContent!** 🎉
+**Thank you for contributing to Wand Wiser!** 🎉
 
 Every contribution, no matter how small, makes a difference!
 

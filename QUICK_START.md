@@ -7,7 +7,7 @@
 
 ## ✅ Prerequisites
 
-- [x] ProAIContent app installed
+- [x] Wand Wiser app installed
 - [x] OpenAI API key configured
 - [x] SerpAPI key configured
 - [x] Node.js installed
@@ -26,7 +26,7 @@
 
 1. Click "New Project"
 2. Fill in:
-   - **Name:** ProAIContent
+   - **Name:** Wand Wiser
    - **Database Password:** (create a strong password - save it!)
    - **Region:** Choose closest to you
 3. Click "Create new project"
@@ -229,7 +229,7 @@ Now that authentication is set up, you can:
 
 ## 🎊 Congratulations!
 
-Your ProAIContent app is now production-ready with:
+Your Wand Wiser app is now production-ready with:
 
 - ✅ Secure authentication
 - ✅ Database storage

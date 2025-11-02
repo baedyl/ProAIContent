@@ -134,7 +134,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -142,11 +142,11 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold gradient-text mb-2">
-            Welcome back, {session?.user?.name || session?.user?.email}!
+          <h1 className="text-4xl font-semibold text-slate-900 mb-2">
+            Welcome back to Wand Wiser, {session?.user?.name || session?.user?.email}
           </h1>
-          <p className="text-gray-600">
-            Manage your AI-generated content and settings
+          <p className="text-slate-500">
+            Track your automations, review generated assets, and fine-tune your workspace preferences.
           </p>
         </motion.div>
 
@@ -158,16 +158,16 @@ export default function DashboardPage() {
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         >
           {stats.map((stat, index) => (
-            <div key={index} className="glass-effect rounded-2xl p-6">
+            <div key={index} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
                   <stat.icon className="w-6 h-6" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-gray-800 mb-1">
+              <div className="text-3xl font-semibold text-slate-900 mb-1">
                 {stat.value}
               </div>
-              <div className="text-sm text-gray-600">{stat.label}</div>
+              <div className="text-sm text-slate-500">{stat.label}</div>
             </div>
           ))}
         </motion.div>
@@ -180,28 +180,28 @@ export default function DashboardPage() {
           className="mb-8"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">Quick Actions</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Quick actions</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/" className="glass-effect rounded-xl p-6 hover:shadow-lg transition-shadow card-hover">
+            <Link href="/" className="rounded-3xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white">
                   <FaPlus className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">Create New Content</h3>
-                  <p className="text-sm text-gray-600">Generate AI-powered content</p>
+                  <h3 className="font-semibold text-slate-900">Create new content</h3>
+                  <p className="text-sm text-slate-500">Launch a guided generation workflow</p>
                 </div>
               </div>
             </Link>
-            <Link href="/settings" className="glass-effect rounded-xl p-6 hover:shadow-lg transition-shadow card-hover">
+            <Link href="/settings" className="rounded-3xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
                   <FaCog className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">Settings</h3>
-                  <p className="text-sm text-gray-600">Customize your preferences</p>
+                  <h3 className="font-semibold text-slate-900">Workspace settings</h3>
+                  <p className="text-sm text-slate-500">Adjust personas, defaults, and publishing</p>
                 </div>
               </div>
             </Link>
@@ -215,14 +215,14 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">Recent Projects</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Recent projects</h2>
           </div>
 
           {projects.length === 0 ? (
-            <div className="glass-effect rounded-2xl p-12 text-center">
-              <FaFolder className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">No projects yet</h3>
-              <p className="text-gray-600 mb-6">Start creating amazing content with AI</p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+              <FaFolder className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">No projects yet</h3>
+              <p className="text-slate-500 mb-6">Kick off your first generation to populate this space.</p>
               <Link href="/" className="btn-primary inline-flex items-center gap-2">
                 <FaPlus />
                 Create Your First Project
@@ -231,25 +231,25 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects.slice(0, 6).map((project) => (
-                <div key={project.id} className="glass-effect rounded-xl p-6 card-hover">
+                <div key={project.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex items-start justify-between mb-3">
-                    <span className="text-xs font-semibold text-primary-600 uppercase">
+                    <span className="text-xs font-semibold text-indigo-600 uppercase">
                       {contentTypeLabels[project.content_type]}
                     </span>
                     <button
                       onClick={() => handleDeleteProject(project.id)}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      className="text-slate-300 hover:text-red-500 transition-colors"
                     >
                       ✕
                     </button>
                   </div>
-                  <h3 className="font-bold text-gray-800 mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
                     {project.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                  <p className="text-sm text-slate-500 mb-4 line-clamp-3">
                     {project.content.substring(0, 150)}...
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>{new Date(project.created_at).toLocaleDateString()}</span>
                     <span>{project.content.split(/\s+/).length} words</span>
                   </div>

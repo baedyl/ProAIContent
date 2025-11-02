@@ -2,7 +2,7 @@
 
 ## 🎉 All Done! 10/10 Tasks Completed
 
-Your ProAIContent app now has a complete authentication and database system powered by Supabase + NextAuth.js
+Your Wand Wiser app now has a complete authentication and database system powered by Supabase + NextAuth.js
 
 ---
 

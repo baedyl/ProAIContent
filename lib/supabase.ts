@@ -88,8 +88,53 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          name: string
+          slug: string | null
+          site_url: string | null
+          persona: string | null
+          status: string | null
+          brief: string | null
+          metadata: any
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          slug?: string | null
+          site_url?: string | null
+          persona?: string | null
+          status?: string | null
+          brief?: string | null
+          metadata?: any
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          slug?: string | null
+          site_url?: string | null
+          persona?: string | null
+          status?: string | null
+          brief?: string | null
+          metadata?: any
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      project_contents: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
           title: string
           content_type: string
+          status: string
+          is_published: boolean
+          published_at: string | null
           content: string
           keywords: string | null
           metadata: any
@@ -98,9 +143,13 @@ export interface Database {
         }
         Insert: {
           id?: string
+          project_id: string
           user_id: string
           title: string
           content_type: string
+          status?: string
+          is_published?: boolean
+          published_at?: string | null
           content: string
           keywords?: string | null
           metadata?: any
@@ -109,9 +158,13 @@ export interface Database {
         }
         Update: {
           id?: string
+          project_id?: string
           user_id?: string
           title?: string
           content_type?: string
+          status?: string
+          is_published?: boolean
+          published_at?: string | null
           content?: string
           keywords?: string | null
           metadata?: any
@@ -222,7 +275,27 @@ export async function getUserProjects(userId: string) {
   return data || []
 }
 
-// Log usage
+export async function getProjectContents(userId: string, projectId?: string) {
+  let query = supabaseAdmin
+    .from('project_contents')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (projectId) {
+    query = query.eq('project_id', projectId)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching project contents:', error)
+    return []
+  }
+
+  return data || []
+}
+
 export async function logUsage(userId: string, action: string, creditsUsed: number = 0) {
   const { error } = await supabaseAdmin
     .from('usage_logs')

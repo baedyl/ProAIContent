@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { FaEnvelope, FaLock, FaUser, FaRocket } from 'react-icons/fa'
+import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
@@ -77,22 +78,22 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-effect rounded-2xl p-8 w-full max-w-md shadow-2xl"
+        className="rounded-3xl border border-indigo-100 bg-white/95 p-8 w-full max-w-md shadow-xl shadow-indigo-200/60"
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-xl gradient-bg flex items-center justify-center">
-            <FaRocket className="w-8 h-8 text-white" />
+          <div className="relative mx-auto mb-4 h-16 w-16 overflow-hidden rounded-2xl border border-indigo-100 bg-white">
+            <Image src="/wand-wiser.svg" alt="Wand Wiser logo" fill className="object-contain p-2" priority />
           </div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">
-            Create Account
+          <h1 className="text-3xl font-semibold text-slate-900 mb-2">
+            Create your Wand Wiser account
           </h1>
-          <p className="text-gray-600">
-            Start creating amazing content for free
+          <p className="text-slate-500">
+            Build premium content workflows with guided automation
           </p>
         </div>
 
@@ -100,11 +101,11 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Full Name
             </label>
             <div className="relative">
-              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
               <input
                 type="text"
                 value={formData.name}
@@ -119,11 +120,11 @@ export default function RegisterPage() {
 
           {/* Email Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Email Address
             </label>
             <div className="relative">
-              <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
               <input
                 type="email"
                 value={formData.email}
@@ -138,11 +139,11 @@ export default function RegisterPage() {
 
           {/* Password Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Password
             </label>
             <div className="relative">
-              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
               <input
                 type="password"
                 value={formData.password}
@@ -154,18 +155,18 @@ export default function RegisterPage() {
                 disabled={isLoading}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Must be at least 6 characters
             </p>
           </div>
 
           {/* Confirm Password Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Confirm Password
             </label>
             <div className="relative">
-              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
               <input
                 type="password"
                 value={formData.confirmPassword}
@@ -202,16 +203,16 @@ export default function RegisterPage() {
 
         {/* Sign In Link */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-500">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-primary-600 hover:text-primary-700">
+            <Link href="/login" className="font-semibold text-indigo-600 hover:text-indigo-700">
               Sign in
             </Link>
           </p>
         </div>
 
         {/* Terms */}
-        <p className="mt-6 text-xs text-center text-gray-500">
+        <p className="mt-6 text-xs text-center text-slate-400">
           By creating an account, you agree to our Terms of Service and Privacy Policy
         </p>
       </motion.div>

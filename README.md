@@ -1,6 +1,6 @@
-# 🚀 ProAIContent - Advanced AI Content Generation Platform
+# 🚀 Wand Wiser - Advanced AI Content Generation Platform
 
-![ProAIContent Banner](https://img.shields.io/badge/AI-Content%20Generation-blue?style=for-the-badge)
+![Wand Wiser Banner](https://img.shields.io/badge/AI-Content%20Generation-blue?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-14.0-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.3-38bdf8?style=for-the-badge&logo=tailwind-css)
@@ -81,7 +81,7 @@ Create **SEO-optimized**, **humanized**, and **unique** content in seconds with 
 1. **Clone the repository**
 ```bash
 git clone <your-repo-url>
-cd ProAIContent
+cd Wand Wiser
 ```
 
 2. **Install dependencies**
@@ -143,7 +143,7 @@ Click "Generate Content" and watch the AI create your optimized content in secon
 ## 📁 Project Structure
 
 ```
-ProAIContent/
+Wand Wiser/
 ├── app/
 │   ├── api/
 │   │   └── generate/

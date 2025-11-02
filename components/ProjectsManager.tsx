@@ -1,267 +1,579 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FaTrash, FaEdit, FaDownload, FaCopy, FaSearch, FaFilter } from 'react-icons/fa'
+import { useEffect, useMemo, useState, FormEvent } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { FaExternalLinkAlt, FaPlus, FaTrash, FaCopy, FaDownload } from 'react-icons/fa'
 import toast from 'react-hot-toast'
-import { format } from 'date-fns'
 
-interface SavedContent {
-  id: number
-  type: string
-  content: string
-  date: string
-  title?: string
-  keywords?: string
+interface Project {
+  id: string
+  name: string
+  slug: string | null
+  site_url: string | null
+  persona: string | null
+  status: string | null
+  brief: string | null
+  metadata: any
+  created_at: string
+  updated_at: string
 }
 
-export default function ProjectsManager() {
-  const [projects, setProjects] = useState<SavedContent[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterType, setFilterType] = useState('all')
-  const [selectedProject, setSelectedProject] = useState<SavedContent | null>(null)
+interface ContentItem {
+  id: string
+  project_id: string
+  user_id: string
+  title: string
+  content_type: string
+  status: string
+  is_published: boolean
+  published_at: string | null
+  content: string
+  keywords: string | null
+  metadata: any
+  created_at: string
+  updated_at: string
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  draft: 'bg-slate-100 text-slate-600',
+  reviewing: 'bg-amber-100 text-amber-600',
+  scheduled: 'bg-blue-100 text-blue-600',
+  published: 'bg-emerald-100 text-emerald-600',
+}
+
+interface ProjectModalProps {
+  open: boolean
+  onClose: () => void
+  onSubmit: (payload: { name: string; siteUrl: string; persona: string; brief: string }) => Promise<void>
+  isSubmitting: boolean
+}
+
+function ProjectModal({ open, onClose, onSubmit, isSubmitting }: ProjectModalProps) {
+  const [name, setName] = useState('')
+  const [siteUrl, setSiteUrl] = useState('')
+  const [persona, setPersona] = useState('')
+  const [brief, setBrief] = useState('')
 
   useEffect(() => {
-    loadProjects()
-  }, [])
-
-  const loadProjects = () => {
-    const saved = localStorage.getItem('savedContent')
-    if (saved) {
-      const parsed = JSON.parse(saved)
-      setProjects(parsed)
+    if (!open) {
+      setName('')
+      setSiteUrl('')
+      setPersona('')
+      setBrief('')
     }
+  }, [open])
+
+  if (!open) {
+    return null
   }
 
-  const deleteProject = (id: number) => {
-    const updated = projects.filter(p => p.id !== id)
-    setProjects(updated)
-    localStorage.setItem('savedContent', JSON.stringify(updated))
-    toast.success('Project deleted')
-    if (selectedProject?.id === id) {
-      setSelectedProject(null)
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+
+    if (!name.trim()) {
+      toast.error('Project name is required')
+      return
     }
-  }
 
-  const downloadProject = (project: SavedContent) => {
-    const blob = new Blob([project.content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${project.type}-${project.id}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    toast.success('Downloaded!')
-  }
-
-  const copyProject = (content: string) => {
-    navigator.clipboard.writeText(content)
-    toast.success('Copied to clipboard!')
-  }
-
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.type.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesFilter = filterType === 'all' || project.type === filterType
-    return matchesSearch && matchesFilter
-  })
-
-  const contentTypeLabels: Record<string, string> = {
-    'blog': 'Blog Post',
-    'product-review': 'Product Review',
-    'comparison': 'Product Comparison',
-    'affiliate': 'Affiliate Content'
+    await onSubmit({
+      name: name.trim(),
+      siteUrl: siteUrl.trim(),
+      persona: persona.trim(),
+      brief: brief.trim(),
+    })
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Projects List */}
-      <div className="lg:col-span-1 space-y-4">
-        <div className="glass-effect rounded-2xl p-6">
-          <h2 className="text-2xl font-bold gradient-text mb-4">
-            My Projects ({projects.length})
-          </h2>
-
-          {/* Search */}
-          <div className="relative mb-4">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search projects..."
-              className="input-field pl-10"
-            />
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4"
+      >
+        <motion.form
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          onSubmit={handleSubmit}
+          className="w-full max-w-xl space-y-5 rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl"
+        >
+          <div>
+            <h3 className="text-2xl font-semibold text-slate-900">Create a new project</h3>
+            <p className="text-sm text-slate-500">Define a workspace for a site, funnel, or client.</p>
           </div>
 
-          {/* Filter */}
-          <div className="flex items-center gap-2 mb-4">
-            <FaFilter className="text-gray-400" />
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="input-field text-sm"
-            >
-              <option value="all">All Types</option>
-              <option value="blog">Blog Posts</option>
-              <option value="product-review">Product Reviews</option>
-              <option value="comparison">Comparisons</option>
-              <option value="affiliate">Affiliate Content</option>
-            </select>
-          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Project name *</label>
+              <input
+                className="input-field"
+                placeholder="e.g., Investir Mexique"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+              />
+            </div>
 
-          {/* Projects List */}
-          <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {filteredProjects.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p>No projects found</p>
-                <p className="text-sm mt-2">Generate content to get started</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Site URL</label>
+                <input
+                  className="input-field"
+                  placeholder="https://example.com"
+                  value={siteUrl}
+                  onChange={(event) => setSiteUrl(event.target.value)}
+                />
               </div>
-            ) : (
-              filteredProjects.map((project) => (
-                <motion.div
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Default persona</label>
+                <input
+                  className="input-field"
+                  placeholder="Choose a persona"
+                  value={persona}
+                  onChange={(event) => setPersona(event.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Brief instructions</label>
+              <textarea
+                className="textarea-field"
+                placeholder="These instructions will be applied to every content generated for this project"
+                rows={4}
+                value={brief}
+                onChange={(event) => setBrief(event.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary flex items-center gap-2 px-5"
+              disabled={isSubmitting}
+            >
+              <FaPlus className="h-3.5 w-3.5" />
+              {isSubmitting ? 'Creating...' : 'Register'}
+            </button>
+          </div>
+        </motion.form>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
+const CONTENT_TYPE_LABELS: Record<string, string> = {
+  blog: 'Article',
+  'product-review': 'Product sheet',
+  comparison: 'Comparison',
+  affiliate: 'Affiliate',
+}
+
+export default function ProjectsManager() {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [allContents, setAllContents] = useState<ContentItem[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSubmittingModal, setIsSubmittingModal] = useState(false)
+
+  const loadData = async () => {
+    setIsLoading(true)
+
+    try {
+      const [projectsRes, contentsRes] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/contents'),
+      ])
+
+      if (projectsRes.ok) {
+        const payload = await projectsRes.json()
+        setProjects(payload.projects || [])
+        if ((!selectedProjectId || !payload.projects?.some((project: Project) => project.id === selectedProjectId)) && payload.projects?.length) {
+          setSelectedProjectId(payload.projects[0].id)
+        }
+      }
+
+      if (contentsRes.ok) {
+        const payload = await contentsRes.json()
+        setAllContents(payload.contents || [])
+      }
+    } catch (error) {
+      console.error('Failed to load projects', error)
+      toast.error('Unable to load projects')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const selectedProject = useMemo(
+    () => projects.find((project) => project.id === selectedProjectId) || null,
+    [projects, selectedProjectId]
+  )
+
+  const projectContents = useMemo(
+    () => allContents.filter((item) => item.project_id === selectedProjectId),
+    [allContents, selectedProjectId]
+  )
+
+  const filteredProjects = useMemo(() => {
+    if (!searchTerm) return projects
+    return projects.filter((project) =>
+      project.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [projects, searchTerm])
+
+  const contentCounts = useMemo(() => {
+    return allContents.reduce<Record<string, number>>((acc, item) => {
+      acc[item.project_id] = (acc[item.project_id] || 0) + 1
+      return acc
+    }, {})
+  }, [allContents])
+
+  const handleSelectProject = (projectId: string) => {
+    setSelectedProjectId(projectId)
+  }
+
+  const handleCreateProject = async (payload: {
+    name: string
+    siteUrl: string
+    persona: string
+    brief: string
+  }) => {
+    try {
+      setIsSubmittingModal(true)
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: payload.name,
+          siteUrl: payload.siteUrl,
+          persona: payload.persona,
+          brief: payload.brief,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create project')
+      }
+
+      const newProject: Project = data.project
+      setProjects((prev) => [newProject, ...prev])
+      setSelectedProjectId(newProject.id)
+      toast.success('Project created')
+      setIsModalOpen(false)
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create project')
+    } finally {
+      setIsSubmittingModal(false)
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    const confirmed = confirm('Delete this project and all associated content?')
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to delete project')
+      }
+
+      setProjects((prev) => {
+        const next = prev.filter((project) => project.id !== projectId)
+        if (selectedProjectId === projectId) {
+          setSelectedProjectId(next.length ? next[0].id : null)
+        }
+        return next
+      })
+
+      setAllContents((prev) => prev.filter((item) => item.project_id !== projectId))
+
+      toast.success('Project deleted')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete project')
+    }
+  }
+
+  const handleCopyContent = (content: string) => {
+    navigator.clipboard.writeText(content)
+    toast.success('Content copied to clipboard')
+  }
+
+  const handleDownloadContent = (item: ContentItem) => {
+    const blob = new Blob([item.content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${item.title || 'content'}-${item.id}.txt`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success('Content downloaded')
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Projects</h2>
+            <p className="text-xs text-slate-500">Organize content by brand, site, or client.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadData}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-medium text-slate-500 hover:border-indigo-200 hover:text-indigo-600"
+              disabled={isLoading}
+            >
+              Refresh
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm"
+            >
+              <FaPlus className="h-3.5 w-3.5" />
+              New project
+            </button>
+          </div>
+        </div>
+
+        <div className="relative">
+          <input
+            className="input-field pl-4 text-sm"
+            placeholder="Search projects"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+        </div>
+
+        <div className="max-h-[480px] space-y-3 overflow-y-auto pr-1">
+          {isLoading ? (
+            <div className="flex h-40 items-center justify-center text-slate-400">
+              <div className="loading-dots text-indigo-500">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="flex h-32 flex-col items-center justify-center text-slate-300">
+              <p className="text-sm">No projects yet.</p>
+              <p className="text-xs text-slate-400">Create your first project to start organizing content.</p>
+            </div>
+          ) : (
+            filteredProjects.map((project) => {
+              const isActive = selectedProjectId === project.id
+              const count = contentCounts[project.id] || 0
+
+              return (
+                <button
                   key={project.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onClick={() => setSelectedProject(project)}
-                  className={`p-4 rounded-xl cursor-pointer transition-all ${
-                    selectedProject?.id === project.id
-                      ? 'bg-primary-100 border-2 border-primary-500'
-                      : 'bg-white hover:bg-gray-50 border-2 border-transparent'
+                  onClick={() => handleSelectProject(project.id)}
+                  className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
+                    isActive
+                      ? 'border-indigo-400 bg-indigo-50/70 text-slate-900 shadow-sm'
+                      : 'border-transparent bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/40'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-xs font-semibold text-primary-600 uppercase">
-                      {contentTypeLabels[project.type]}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {format(new Date(project.date), 'MMM dd, yyyy')}
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{project.name}</div>
+                    <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-indigo-600">
+                      {count} content{count === 1 ? '' : 's'}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700 line-clamp-2">
-                    {project.content.substring(0, 100)}...
-                  </p>
-                  <div className="flex items-center gap-2 mt-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        copyProject(project.content)
-                      }}
-                      className="p-1 hover:bg-primary-200 rounded transition-colors"
-                      title="Copy"
+                  {project.site_url && (
+                    <div className="mt-1 flex items-center gap-1 text-xs text-indigo-500">
+                      <FaExternalLinkAlt className="h-3 w-3" />
+                      <span className="truncate">{project.site_url}</span>
+                    </div>
+                  )}
+                  {project.persona && (
+                    <div className="mt-1 text-xs text-slate-400">Persona: {project.persona}</div>
+                  )}
+                </button>
+              )
+            })
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        {selectedProject ? (
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-semibold text-slate-900">{selectedProject.name}</h3>
+                <div className="mt-1 text-sm text-slate-500">
+                  {selectedProject.brief ? selectedProject.brief : 'No global brief defined for this project yet.'}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                  {selectedProject.site_url && (
+                    <a
+                      href={selectedProject.site_url.startsWith('http') ? selectedProject.site_url : `https://${selectedProject.site_url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-indigo-500 hover:border-indigo-300 hover:text-indigo-600"
                     >
-                      <FaCopy className="w-3 h-3 text-gray-600" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        downloadProject(project)
-                      }}
-                      className="p-1 hover:bg-primary-200 rounded transition-colors"
-                      title="Download"
-                    >
-                      <FaDownload className="w-3 h-3 text-gray-600" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteProject(project.id)
-                      }}
-                      className="p-1 hover:bg-red-200 rounded transition-colors"
-                      title="Delete"
-                    >
-                      <FaTrash className="w-3 h-3 text-red-600" />
-                    </button>
+                      <FaExternalLinkAlt className="h-3 w-3" />
+                      Visit site
+                    </a>
+                  )}
+                  {selectedProject.persona && (
+                    <span className="rounded-full border border-slate-200 px-3 py-1">Persona: {selectedProject.persona}</span>
+                  )}
+                  <span className="rounded-full border border-slate-200 px-3 py-1">
+                    Created {new Date(selectedProject.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => handleDeleteProject(selectedProject.id)}
+                className="rounded-full border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                <FaTrash className="mr-2 inline h-3 w-3" />
+                Delete project
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-slate-700">Project summary</h4>
+                <span className="text-xs text-slate-400">Last update {new Date(selectedProject.updated_at).toLocaleDateString()}</span>
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-400">Contents</div>
+                  <div className="text-2xl font-semibold text-slate-900">{projectContents.length}</div>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-400">Published</div>
+                  <div className="text-2xl font-semibold text-slate-900">
+                    {projectContents.filter((item) => item.is_published).length}
                   </div>
-                </motion.div>
-              ))
-            )}
+                </div>
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-400">Drafts</div>
+                  <div className="text-2xl font-semibold text-slate-900">
+                    {projectContents.filter((item) => item.status === 'draft').length}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                <div>
+                  <h4 className="text-base font-semibold text-slate-900">Content library</h4>
+                  <p className="text-xs text-slate-400">All assets generated inside this project.</p>
+                </div>
+                <div className="text-xs text-slate-400">{projectContents.length} item{projectContents.length === 1 ? '' : 's'}</div>
+              </div>
+
+              {projectContents.length === 0 ? (
+                <div className="flex h-40 flex-col items-center justify-center text-slate-300">
+                  <p className="text-sm">No content generated yet.</p>
+                  <p className="text-xs text-slate-400">Use the generator to produce the first article for this project.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-slate-100 text-sm">
+                    <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
+                      <tr>
+                        <th className="px-6 py-3 text-left font-semibold">Title</th>
+                        <th className="px-6 py-3 text-left font-semibold">Type</th>
+                        <th className="px-6 py-3 text-left font-semibold">Status</th>
+                        <th className="px-6 py-3 text-left font-semibold">Updated</th>
+                        <th className="px-6 py-3 text-right font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {projectContents.map((item) => (
+                        <tr key={item.id} className="hover:bg-indigo-50/40">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-slate-900">{item.title}</div>
+                            {item.keywords && (
+                              <div className="text-xs text-slate-400">{item.keywords}</div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-slate-500">
+                            {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                STATUS_BADGE[item.status] || 'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-400">
+                            {new Date(item.updated_at).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleCopyContent(item.content)}
+                                className="rounded-full border border-slate-200 p-2 text-slate-500 hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-600"
+                                title="Copy"
+                              >
+                                <FaCopy className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDownloadContent(item)}
+                                className="rounded-full border border-slate-200 p-2 text-slate-500 hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-600"
+                                title="Download"
+                              >
+                                <FaDownload className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center text-slate-300">
+            <p className="text-base">Select a project to see its content library.</p>
+            <p className="text-sm text-slate-400">Projects help you group AI content by site, brand, or client.</p>
+          </div>
+        )}
       </div>
 
-      {/* Project Preview */}
-      <div className="lg:col-span-2">
-        <div className="glass-effect rounded-2xl p-6 min-h-[600px]">
-          <AnimatePresence mode="wait">
-            {selectedProject ? (
-              <motion.div
-                key={selectedProject.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
-              >
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-800">
-                      {contentTypeLabels[selectedProject.type]}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Created {format(new Date(selectedProject.date), 'MMMM dd, yyyy \'at\' HH:mm')}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => copyProject(selectedProject.content)}
-                      className="btn-secondary text-sm"
-                    >
-                      <FaCopy className="inline mr-2" />
-                      Copy
-                    </button>
-                    <button
-                      onClick={() => downloadProject(selectedProject)}
-                      className="btn-primary text-sm"
-                    >
-                      <FaDownload className="inline mr-2" />
-                      Download
-                    </button>
-                  </div>
-                </div>
-
-                <div className="prose prose-sm max-w-none bg-gray-50 rounded-xl p-6 max-h-[500px] overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-gray-700 font-sans">
-                    {selectedProject.content}
-                  </pre>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary-600">
-                      {selectedProject.content.split(/\s+/).length}
-                    </div>
-                    <div className="text-xs text-gray-500">Words</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-accent-600">
-                      {selectedProject.content.length}
-                    </div>
-                    <div className="text-xs text-gray-500">Characters</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {Math.ceil(selectedProject.content.split(/\s+/).length / 200)}
-                    </div>
-                    <div className="text-xs text-gray-500">Min Read</div>
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex flex-col items-center justify-center h-full text-gray-400"
-              >
-                <FaEdit className="w-16 h-16 mb-4" />
-                <p className="text-lg">Select a project to view</p>
-                <p className="text-sm mt-2">Choose from your saved projects on the left</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
+      <ProjectModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateProject}
+        isSubmitting={isSubmittingModal}
+      />
     </div>
   )
 }

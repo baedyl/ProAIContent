@@ -3,6 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin, logUsage } from '@/lib/supabase'
 
+function createSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 /**
  * GET - Fetch all projects for the authenticated user
  */
@@ -47,29 +55,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { title, content_type, content, keywords, metadata } = await request.json()
+    const body = await request.json()
+    const name = body.name?.trim()
 
-    if (!title || !content_type || !content) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Title, content type, and content are required' },
+        { error: 'Project name is required' },
         { status: 400 }
       )
     }
+
+    const slug = body.slug ? createSlug(body.slug) : createSlug(name)
 
     const { data, error } = await supabaseAdmin
       .from('projects')
       .insert({
         user_id: session.user.id,
-        title,
-        content_type,
-        content,
-        keywords: keywords || null,
-        metadata: metadata || {},
+        name,
+        slug,
+        site_url: body.siteUrl || null,
+        persona: body.persona || null,
+        status: body.status || 'active',
+        brief: body.brief || null,
+        metadata: body.metadata || {},
       })
       .select()
       .single()
 
     if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json(
+          { error: 'A project with this name already exists' },
+          { status: 409 }
+        )
+      }
+
       console.error('Error creating project:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }

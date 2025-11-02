@@ -1,6 +1,6 @@
-# 📚 ProAIContent Features Documentation
+# 📚 Wand Wiser Features Documentation
 
-Comprehensive guide to all features and capabilities of ProAIContent.
+Comprehensive guide to all features and capabilities of Wand Wiser.
 
 ## 🎯 Content Types
 

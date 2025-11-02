@@ -1,4 +1,4 @@
-# 🎉 What's New in ProAIContent v1.1
+# 🎉 What's New in Wand Wiser v1.1
 
 ## 🚀 Major Update: Advanced Features Implementation
 
@@ -399,7 +399,7 @@ Try different personas to find your voice.
 
 ## 🎉 Thank You!
 
-Thank you for using ProAIContent! This major update brings professional-grade features while maintaining our commitment to quality, reliability, and ease of use.
+Thank you for using Wand Wiser! This major update brings professional-grade features while maintaining our commitment to quality, reliability, and ease of use.
 
 **Enjoy creating amazing content!** 🚀
 

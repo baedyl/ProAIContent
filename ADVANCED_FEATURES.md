@@ -1,6 +1,6 @@
 # 🚀 Advanced Features Guide
 
-ProAIContent now includes powerful advanced features inspired by professional content generation APIs, enhanced with modern architecture and reliability.
+Wand Wiser now includes powerful advanced features inspired by professional content generation APIs, enhanced with modern architecture and reliability.
 
 ---
 

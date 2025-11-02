@@ -79,12 +79,12 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
   return (
     <motion.form
       onSubmit={handleSubmit}
-      className="glass-effect rounded-2xl p-6 space-y-6"
+      className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-6"
     >
       <div className="space-y-4">
         {/* Topic */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Topic / Subject *
           </label>
           <input
@@ -96,14 +96,14 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
             className="input-field"
             required
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Enter the main topic or subject of your content
           </p>
         </div>
 
         {/* Keywords */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Target Keywords (SEO)
           </label>
           <input
@@ -114,14 +114,14 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
             placeholder="e.g., wireless headphones, bluetooth, noise cancelling"
             className="input-field"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Comma-separated keywords for SEO optimization
           </p>
         </div>
 
         {/* Tone */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Tone
           </label>
           <select
@@ -140,7 +140,7 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
 
         {/* Style */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Writing Style
           </label>
           <select
@@ -159,7 +159,7 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
 
         {/* Length */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Content Length
           </label>
           <select
@@ -178,7 +178,7 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
 
         {/* Target Audience */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Target Audience
           </label>
           <input
@@ -189,14 +189,14 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
             placeholder="e.g., Tech enthusiasts, age 25-40"
             className="input-field"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Who is this content for?
           </p>
         </div>
 
         {/* Additional Instructions */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
             Additional Instructions
           </label>
           <textarea
@@ -210,11 +210,11 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
         </div>
 
         {/* Advanced Options Toggle */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-slate-200">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-colors"
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
           >
             <FaStar className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
             <span>{showAdvanced ? 'Hide' : 'Show'} Advanced Options</span>
@@ -231,7 +231,7 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
           >
             {/* Persona Selection */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                 <FaRobot className="text-primary-600" />
                 Writer Persona
               </label>
@@ -247,14 +247,14 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Choose a pre-configured writing personality and style
               </p>
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Target Location
               </label>
               <select
@@ -272,9 +272,10 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
             </div>
 
             {/* Advanced Features Checkboxes */}
-            <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-xl p-4 space-y-3">
-              <p className="text-sm font-semibold text-gray-800 mb-3">
-                🚀 Advanced SEO & Content Features
+            <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 space-y-3">
+              <p className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                <span role="img" aria-label="sparkles">✨</span>
+                Advanced SEO & content features
               </p>
 
               {/* SERP Analysis */}
@@ -289,11 +290,11 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <FaSearch className="text-primary-600" />
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600">
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-600">
                       SERP Analysis
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Analyze top-ranking Google results for competitive insights
                   </p>
                 </div>
@@ -312,11 +313,11 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <FaInfoCircle className="text-accent-600" />
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600">
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-600">
                       Extract Competitor Headers
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Analyze header structures from top-ranking pages (requires SERP Analysis)
                   </p>
                 </div>
@@ -335,11 +336,11 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <FaQuestionCircle className="text-green-600" />
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600">
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-600">
                       Auto-Generate FAQ
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Create FAQ from "People Also Ask" with schema markup (requires SERP Analysis)
                   </p>
                 </div>
@@ -357,11 +358,11 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <FaYoutube className="text-red-600" />
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600">
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-600">
                       Embed YouTube Video
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Automatically find and embed a relevant YouTube video
                   </p>
                 </div>
@@ -372,12 +373,12 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
       </div>
 
       {/* SEO & Humanization Info */}
-      <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-xl p-4 space-y-2">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
         <div className="flex items-start gap-2">
-          <FaInfoCircle className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-gray-700 space-y-1">
-            <p className="font-semibold">Automatic Optimization:</p>
-            <ul className="list-disc list-inside space-y-1 text-xs">
+          <FaInfoCircle className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-slate-700 space-y-1">
+            <p className="font-semibold">Automatic optimization</p>
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500">
               <li>SEO semantic optimization for SERP ranking</li>
               <li>Content humanization to bypass AI detection</li>
               <li>Natural language patterns and varied sentence structures</li>
@@ -398,7 +399,7 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
       </button>
 
       {/* Credits Info */}
-      <p className="text-center text-xs text-gray-500">
+      <p className="text-center text-xs text-slate-500">
         This will use approximately 5-10 credits depending on length
       </p>
     </motion.form>

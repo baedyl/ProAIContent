@@ -1,6 +1,6 @@
 # ✅ Installation Complete!
 
-Congratulations! ProAIContent has been successfully created.
+Congratulations! Wand Wiser has been successfully created.
 
 ---
 
@@ -91,7 +91,7 @@ npm run dev
 
 Navigate to: **http://localhost:3000**
 
-You should see the ProAIContent dashboard!
+You should see the Wand Wiser dashboard!
 
 ### 7. Generate Your First Content
 

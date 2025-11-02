@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * ProAIContent Setup Verification Script
+ * Wand Wiser Setup Verification Script
  * Run this script to verify your installation is correct
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('\n🔍 ProAIContent Setup Verification\n');
-console.log('=' .repeat(50));
+console.log('\n🔍 Wand Wiser Setup Verification\n');
+console.log('='.repeat(50));
 
 let allChecksPassed = true;
 
