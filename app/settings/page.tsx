@@ -100,7 +100,7 @@ export default function SettingsPage() {
           className="mb-8"
         >
           <h1 className="text-4xl font-semibold text-slate-900 mb-2">Workspace settings</h1>
-          <p className="text-slate-500">Refine tone, personas, and automation defaults for your Wand Wiser studio.</p>
+          <p className="text-slate-500">Refine tone, personas, and automation defaults for your ProAI Writer studio.</p>
         </motion.div>
 
         <motion.div

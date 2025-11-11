@@ -61,11 +61,17 @@ export default function LoginPage() {
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="relative mx-auto mb-4 h-16 w-16 overflow-hidden rounded-2xl border border-indigo-100 bg-white">
-            <Image src="/wand-wiser.svg" alt="Wand Wiser logo" fill className="object-contain p-2" priority />
+          <div className="relative mx-auto mb-4 h-16 w-full flex-shrink-0">
+            <Image 
+              src="/proai-writer.svg" 
+              alt="ProAI Writer logo" 
+              fill
+              className="object-contain drop-shadow-lg" 
+              priority 
+            />
           </div>
           <h1 className="text-3xl font-semibold text-slate-900 mb-2">
-            Welcome back to Wand Wiser
+            Welcome back to ProAI Writer
           </h1>
           <p className="text-slate-500">
             Launch premium content workflows with your personalized studio

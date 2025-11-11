@@ -1,6 +1,6 @@
-# 🚀 Wand Wiser - Advanced AI Content Generation Platform
+# 🚀 ProAI Writer - Advanced AI Content Generation Platform
 
-![Wand Wiser Banner](https://img.shields.io/badge/AI-Content%20Generation-blue?style=for-the-badge)
+![ProAI Writer Banner](https://img.shields.io/badge/AI-Content%20Generation-blue?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-14.0-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.3-38bdf8?style=for-the-badge&logo=tailwind-css)
@@ -52,15 +52,17 @@ Create **SEO-optimized**, **humanized**, and **unique** content in seconds with 
 - Keyword density analysis
 - Readability scoring
 
-### 🤖 Humanization Techniques
-- Varied sentence structures
-- Natural contractions usage
-- Personal pronouns and perspectives
-- Rhetorical questions
-- Emotional language
-- Transitional phrases
-- Vocabulary diversity
-- Imperfect but natural flow
+### 🤖 Advanced Humanization (NEW v2.0)
+- **30-Point Humanization Framework** - Comprehensive approach to bypass AI detection
+- **Optimized AI Parameters** - Temperature 0.95, enhanced penalties for natural variation
+- **Automatic Contraction Injection** - Post-processing adds natural contractions
+- **Varied Sentence Structures** - Dramatic length variation (5-30 words)
+- **Conversational Tone** - Personal pronouns, casual transitions, colloquialisms
+- **Human Imperfections** - Fragments, em-dashes, parentheticals, varied paragraphs
+- **Emotional Language** - Opinions, subjective language, rhetorical questions
+- **Target Result**: 65-85% human detection on AI detectors
+
+📖 **[Complete Humanization Guide](HUMANIZATION_GUIDE.md)** | 🚀 **[Quick Tips](HUMANIZATION_QUICK_TIPS.md)**
 
 ### 💾 Project Management
 - Save generated content

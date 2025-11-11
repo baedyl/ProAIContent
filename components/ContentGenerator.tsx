@@ -222,7 +222,7 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
               {contentTypeTitles[contentType]}
             </h2>
             <p className="text-slate-500 mt-1">
-              Guide Wand Wiser with your brief while we orchestrate SERP research, tone, and conversion structure.
+              Guide ProAI Writer with your brief while we orchestrate SERP research, tone, and conversion structure.
             </p>
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-semibold text-slate-900">Generating your content...</p>
-                    <p className="text-sm text-slate-500 mt-2">Wand Wiser is orchestrating SERP insights, tone, and structure.</p>
+                    <p className="text-sm text-slate-500 mt-2">ProAI Writer is orchestrating SERP insights, tone, and structure.</p>
                   </div>
                   <div className="loading-dots text-primary-600">
                     <span></span>

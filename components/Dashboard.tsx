@@ -106,7 +106,7 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
         className="text-center space-y-4"
       >
         <h2 className="text-5xl font-bold gradient-text">
-          Welcome back to your Wand Wiser studio
+          Welcome back to your ProAI Writer studio
         </h2>
         <p className="text-xl text-slate-500 max-w-3xl mx-auto">
           Launch high-performing articles, product reviews, and conversion assets with curated workflows, SERP intelligence, and guided optimization.
@@ -153,7 +153,7 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
         className="rounded-3xl border border-slate-200 bg-white p-10 shadow-sm"
       >
         <h3 className="text-2xl font-bold text-center mb-8 gradient-text">
-          Why teams choose Wand Wiser
+          Why teams choose ProAI Writer
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (

@@ -143,7 +143,7 @@ export default function DashboardPage() {
           className="mb-8"
         >
           <h1 className="text-4xl font-semibold text-slate-900 mb-2">
-            Welcome back to Wand Wiser, {session?.user?.name || session?.user?.email}
+            Welcome back to ProAI Writer, {session?.user?.name || session?.user?.email}
           </h1>
           <p className="text-slate-500">
             Track your automations, review generated assets, and fine-tune your workspace preferences.

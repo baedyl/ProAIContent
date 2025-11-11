@@ -1,7 +1,7 @@
 {
-  "name": "wand-wiser",
+  "name": "proai-writer",
   "version": "1.0.0",
-  "description": "Wand Wiser – AI content studio for SEO-optimized, humanized storytelling",
+  "description": "ProAI Writer – AI content studio for SEO-optimized, humanized storytelling",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

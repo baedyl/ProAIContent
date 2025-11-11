@@ -42,19 +42,15 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-md shadow-indigo-200/40">
+            <div className="flex items-center">
+              <div className="relative h-20 w-20 flex-shrink-0">
                 <Image
-                  src="/wand-wiser.svg"
-                  alt="Wand Wiser logo"
+                  src="/proai-writer.svg"
+                  alt="ProAI Writer logo"
                   fill
-                  className="object-contain p-2"
+                  className="object-contain"
                   priority
                 />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Wand Wiser</h1>
-                <p className="text-sm text-slate-500">AI content studio for modern growth teams</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -130,7 +126,7 @@ export default function Home() {
       <footer className="border-t border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col gap-2 text-center text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <p>© {new Date().getFullYear()} Wand Wiser. Craft intelligent, human-first stories with AI precision.</p>
+            <p>© {new Date().getFullYear()} ProAI Writer. Craft intelligent, human-first stories with AI precision.</p>
             <p className="text-xs text-indigo-500">Designed for content leaders and growth operators.</p>
           </div>
         </div>

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Wand Wiser Setup Verification Script
+ * ProAI Writer Setup Verification Script
  * Run this script to verify your installation is correct
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('\n🔍 Wand Wiser Setup Verification\n');
+console.log('\n🔍 ProAI Writer Setup Verification\n');
 console.log('='.repeat(50));
 
 let allChecksPassed = true;
