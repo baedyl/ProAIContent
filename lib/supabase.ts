@@ -1,0 +1,1037 @@
+/**
+ * Supabase Client Configuration
+ * Handles database connections and authentication
+ */
+
+import { createClient } from '@supabase/supabase-js'
+import type { PostgrestError } from '@supabase/supabase-js'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+
+// Supabase configuration
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
+/**
+ * Client-side Supabase client
+ * Use this in browser/client components
+ */
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+
+/**
+ * Server-side Supabase admin client
+ * Use this in API routes and server components
+ * Has elevated privileges
+ */
+export const supabaseAdmin = createClient<Database>(
+  supabaseUrl,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
+
+/**
+ * Create a Supabase client for use in Client Components
+ */
+export function createSupabaseClient() {
+  return createClientComponentClient()
+}
+
+/**
+ * Create a Supabase server client using the anon key (no session persistence)
+ */
+export function createSupabaseServerClient() {
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+}
+
+/**
+ * Database Types
+ */
+type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      user_settings: {
+        Row: {
+          id: string
+          user_id: string
+          theme: string
+          default_tone: string
+          default_style: string
+          default_length: string
+          preferred_persona: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          theme?: string
+          default_tone?: string
+          default_style?: string
+          default_length?: string
+          preferred_persona?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          theme?: string
+          default_tone?: string
+          default_style?: string
+          default_length?: string
+          preferred_persona?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      users: {
+        Row: {
+          id: string
+          email: string
+          credits_balance: number
+          trial_credits_given: boolean
+          stripe_customer_id: string | null
+          last_login_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          credits_balance?: number
+          trial_credits_given?: boolean
+          stripe_customer_id?: string | null
+          last_login_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          credits_balance?: number
+          trial_credits_given?: boolean
+          stripe_customer_id?: string | null
+          last_login_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      projects: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          slug: string | null
+          site_url: string | null
+          persona: string | null
+          status: string | null
+          brief: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          slug?: string | null
+          site_url?: string | null
+          persona?: string | null
+          status?: string | null
+          brief?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          slug?: string | null
+          site_url?: string | null
+          persona?: string | null
+          status?: string | null
+          brief?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      project_contents: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
+          title: string
+          content_type: string
+          status: string
+          is_published: boolean
+          published_at: string | null
+          content: string
+          keywords: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          title: string
+          content_type: string
+          status?: string
+          is_published?: boolean
+          published_at?: string | null
+          content: string
+          keywords?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string
+          title?: string
+          content_type?: string
+          status?: string
+          is_published?: boolean
+          published_at?: string | null
+          content?: string
+          keywords?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      usage_logs: {
+        Row: {
+          id: string
+          user_id: string
+          action: string
+          credits_used: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action: string
+          credits_used?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          action?: string
+          credits_used?: number
+          created_at?: string
+        }
+      }
+      credit_transactions: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          type: 'trial' | 'purchase' | 'usage' | 'adjustment' | 'refund'
+          description: string | null
+          balance_before: number | null
+          balance_after: number | null
+          stripe_payment_id: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          type: 'trial' | 'purchase' | 'usage' | 'adjustment' | 'refund'
+          description?: string | null
+          balance_before?: number | null
+          balance_after?: number | null
+          stripe_payment_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          type?: 'trial' | 'purchase' | 'usage' | 'adjustment' | 'refund'
+          description?: string | null
+          balance_before?: number | null
+          balance_after?: number | null
+          stripe_payment_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      generated_content: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          content: string
+          word_count: number
+          credits_used: number
+          requested_length: number
+          settings: Json | null
+          status: string | null
+          retry_count: number | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          content: string
+          word_count: number
+          credits_used: number
+          requested_length: number
+          settings?: Json | null
+          status?: string | null
+          retry_count?: number | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          content?: string
+          word_count?: number
+          credits_used?: number
+          requested_length?: number
+          settings?: Json | null
+          status?: string | null
+          retry_count?: number | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+      }
+      purchases: {
+        Row: {
+          id: string
+          user_id: string
+          stripe_session_id: string | null
+          stripe_payment_id: string | null
+          amount_cents: number
+          credits_purchased: number
+          status: 'pending' | 'paid' | 'failed' | 'refunded'
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          stripe_session_id?: string | null
+          stripe_payment_id?: string | null
+          amount_cents: number
+          credits_purchased: number
+          status?: 'pending' | 'paid' | 'failed' | 'refunded'
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          stripe_session_id?: string | null
+          stripe_payment_id?: string | null
+          amount_cents?: number
+          credits_purchased?: number
+          status?: 'pending' | 'paid' | 'failed' | 'refunded'
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+    }
+    Views: {
+      credit_usage_daily: {
+        Row: {
+          user_id: string
+          usage_day: string
+          credits_spent: number | null
+          credits_added: number | null
+        }
+      }
+    }
+    Functions: {
+      adjust_user_credits: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_type: 'trial' | 'purchase' | 'usage' | 'adjustment' | 'refund'
+          p_description?: string | null
+          p_stripe_payment_id?: string | null
+          p_metadata?: Json | null
+        }
+        Returns: Database['public']['Tables']['credit_transactions']['Row']
+      }
+    }
+  }
+}
+
+export type UserRecord = Database['public']['Tables']['users']['Row']
+export type CreditTransactionRecord = Database['public']['Tables']['credit_transactions']['Row']
+export type GeneratedContentRecord = Database['public']['Tables']['generated_content']['Row']
+export type PurchaseRecord = Database['public']['Tables']['purchases']['Row']
+export type PurchaseStatus = PurchaseRecord['status']
+export type CreditTransactionType = CreditTransactionRecord['type']
+
+const SUPABASE_NOT_FOUND = 'PGRST116'
+export const TRIAL_CREDIT_AMOUNT = 10_000
+
+/**
+ * Helper functions for common database operations
+ */
+
+function isNotFoundError(error: PostgrestError | null): boolean {
+  return !!error && error.code === SUPABASE_NOT_FOUND
+}
+
+// User settings helpers
+export async function getUserSettings(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('user_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
+  if (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    console.error('Error fetching user settings:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function createDefaultUserSettings(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('user_settings')
+    .upsert(
+      {
+        user_id: userId,
+        theme: 'light',
+        default_tone: 'professional',
+        default_style: 'informative',
+        default_length: 'medium',
+        preferred_persona: 'default'
+      },
+      { onConflict: 'user_id' }
+    )
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error creating user settings:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function updateUserSettings(userId: string, settings: Partial<Database['public']['Tables']['user_settings']['Update']>) {
+  const { data, error } = await supabaseAdmin
+    .from('user_settings')
+    .update({ ...settings, updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating user settings:', error)
+    throw error
+  }
+
+  return data
+}
+
+// Projects & contents helpers (legacy support)
+export async function getUserProjects(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('projects')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching projects:', error)
+    throw error
+  }
+
+  return data || []
+}
+
+export async function getProjectContents(userId: string, projectId?: string) {
+  let query = supabaseAdmin
+    .from('project_contents')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (projectId) {
+    query = query.eq('project_id', projectId)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching project contents:', error)
+    throw error
+  }
+
+  return data || []
+}
+
+// Credits & billing helpers
+export async function getUserProfile(userId: string): Promise<UserRecord | null> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching user profile:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function ensureUserProfile(userId: string, email: string): Promise<UserRecord> {
+  const now = new Date().toISOString()
+  const existing = await getUserProfile(userId)
+
+  if (!existing) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: userId,
+        email,
+        last_login_at: now
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating user profile:', error)
+      throw error
+    }
+
+    return data
+  }
+
+  const needsUpdate = existing.email !== email || existing.last_login_at === null
+  if (!needsUpdate) {
+    // still update last_login_at for analytics
+    await supabaseAdmin
+      .from('users')
+      .update({ last_login_at: now })
+      .eq('id', userId)
+    return { ...existing, last_login_at: now }
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .update({
+      email,
+      last_login_at: now
+    })
+    .eq('id', userId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating user profile:', error)
+    throw error
+  }
+
+  return data
+}
+
+export interface AdjustUserCreditsParams {
+  userId: string
+  amount: number
+  type: CreditTransactionType
+  description?: string
+  stripePaymentId?: string
+  metadata?: Json
+}
+
+export async function adjustUserCredits(params: AdjustUserCreditsParams): Promise<CreditTransactionRecord> {
+  const { userId, amount, type, description, stripePaymentId, metadata } = params
+
+  const { data, error } = await supabaseAdmin.rpc('adjust_user_credits', {
+    p_user_id: userId,
+    p_amount: amount,
+    p_type: type,
+    p_description: description ?? null,
+    p_stripe_payment_id: stripePaymentId ?? null,
+    p_metadata: metadata ?? null
+  })
+
+  if (error) {
+    console.error('adjust_user_credits error:', error)
+    throw error
+  }
+
+  return data as CreditTransactionRecord
+}
+
+export async function getUserCreditBalance(userId: string): Promise<number> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('credits_balance')
+    .eq('id', userId)
+    .single()
+
+  if (error) {
+    if (isNotFoundError(error)) {
+      return 0
+    }
+    console.error('Error fetching credit balance:', error)
+    throw error
+  }
+
+  return data.credits_balance ?? 0
+}
+
+export interface CreditTransactionsQuery {
+  limit?: number
+  cursor?: string
+}
+
+export interface PaginatedResult<T> {
+  items: T[]
+  nextCursor: string | null
+}
+
+export async function getCreditTransactions(userId: string, params: CreditTransactionsQuery = {}): Promise<PaginatedResult<CreditTransactionRecord>> {
+  const { limit = 20, cursor } = params
+
+  let query = supabaseAdmin
+    .from('credit_transactions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit + 1)
+
+  if (cursor) {
+    query = query.lt('created_at', cursor)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching credit transactions:', error)
+    throw error
+  }
+
+  const items = data ?? []
+  const hasMore = items.length > limit
+  const trimmed = hasMore ? items.slice(0, limit) : items
+  const nextCursor = hasMore ? trimmed[trimmed.length - 1].created_at : null
+
+  return { items: trimmed, nextCursor }
+}
+
+export async function awardTrialCreditsIfNeeded(userId: string, email: string, amount: number = TRIAL_CREDIT_AMOUNT): Promise<UserRecord> {
+  const profile = await ensureUserProfile(userId, email)
+
+  if (profile.trial_credits_given) {
+    return profile
+  }
+
+  await adjustUserCredits({
+    userId,
+    amount,
+    type: 'trial',
+    description: 'Free trial credits'
+  })
+
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .update({ trial_credits_given: true })
+    .eq('id', userId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error marking trial credits as granted:', error)
+    throw error
+  }
+
+  return data
+}
+
+export interface RecordGeneratedContentParams {
+  userId: string
+  title: string
+  content: string
+  wordCount: number
+  creditsUsed: number
+  requestedLength: number
+  settings?: Json
+  status?: string
+  retryCount?: number
+}
+
+export async function recordGeneratedContent(params: RecordGeneratedContentParams): Promise<GeneratedContentRecord> {
+  const {
+    userId,
+    title,
+    content,
+    wordCount,
+    creditsUsed,
+    requestedLength,
+    settings,
+    status = 'completed',
+    retryCount = 0
+  } = params
+
+  const { data, error } = await supabaseAdmin
+    .from('generated_content')
+    .insert({
+      user_id: userId,
+      title,
+      content,
+      word_count: wordCount,
+      credits_used: creditsUsed,
+      requested_length: requestedLength,
+      settings: settings ?? null,
+      status,
+      retry_count: retryCount
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error recording generated content:', error)
+    throw error
+  }
+
+  return data
+}
+
+export interface GeneratedContentQuery {
+  limit?: number
+  cursor?: string
+  search?: string
+}
+
+export async function listGeneratedContent(userId: string, params: GeneratedContentQuery = {}): Promise<PaginatedResult<GeneratedContentRecord>> {
+  const { limit = 10, cursor, search } = params
+
+  let query = supabaseAdmin
+    .from('generated_content')
+    .select('*')
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(limit + 1)
+
+  if (cursor) {
+    query = query.lt('created_at', cursor)
+  }
+
+  if (search) {
+    const wildcard = `%${search}%`
+    query = query.or(`title.ilike.${wildcard},content.ilike.${wildcard}`)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching generated content:', error)
+    throw error
+  }
+
+  const items = data ?? []
+  const hasMore = items.length > limit
+  const trimmed = hasMore ? items.slice(0, limit) : items
+  const nextCursor = hasMore ? trimmed[trimmed.length - 1].created_at : null
+
+  return { items: trimmed, nextCursor }
+}
+
+export async function getGeneratedContentById(userId: string, contentId: string): Promise<GeneratedContentRecord | null> {
+  const { data, error } = await supabaseAdmin
+    .from('generated_content')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('id', contentId)
+    .single()
+
+  if (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    console.error('Error fetching generated content by id:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function softDeleteGeneratedContent(userId: string, contentId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('generated_content')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .eq('id', contentId)
+
+  if (error) {
+    console.error('Error soft deleting generated content:', error)
+    throw error
+  }
+}
+
+export async function updateGeneratedContentRecord(
+  userId: string,
+  contentId: string,
+  updates: Partial<GeneratedContentRecord>
+): Promise<GeneratedContentRecord> {
+  const payload = { ...updates, updated_at: new Date().toISOString() }
+
+  delete (payload as any).id
+  delete (payload as any).user_id
+  delete (payload as any).created_at
+
+  const { data, error } = await supabaseAdmin
+    .from('generated_content')
+    .update(payload)
+    .eq('user_id', userId)
+    .eq('id', contentId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating generated content:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function getCreditUsageTimeline(userId: string, days: number = 30) {
+  const since = new Date()
+  since.setDate(since.getDate() - days)
+
+  const { data, error } = await supabaseAdmin
+    .from('credit_usage_daily')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('usage_day', since.toISOString())
+    .order('usage_day', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching credit usage timeline:', error)
+    throw error
+  }
+
+  return data || []
+}
+
+export interface CreatePurchaseParams {
+  id?: string
+  userId: string
+  stripeSessionId: string
+  amountCents: number
+  creditsPurchased: number
+  metadata?: Json
+}
+
+export async function createPurchaseRecord(params: CreatePurchaseParams): Promise<PurchaseRecord> {
+  const { userId, stripeSessionId, amountCents, creditsPurchased, metadata } = params
+
+  const { data, error } = await supabaseAdmin
+    .from('purchases')
+    .insert({
+      id: params.id,
+      user_id: userId,
+      stripe_session_id: stripeSessionId,
+      amount_cents: amountCents,
+      credits_purchased: creditsPurchased,
+      status: 'pending',
+      metadata: metadata ?? null
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error creating purchase record:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function updatePurchaseById(purchaseId: string, updates: Partial<Database['public']['Tables']['purchases']['Update']>): Promise<PurchaseRecord> {
+  const { data, error } = await supabaseAdmin
+    .from('purchases')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', purchaseId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating purchase record:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function getPurchaseByStripeSessionId(sessionId: string): Promise<PurchaseRecord | null> {
+  const { data, error } = await supabaseAdmin
+    .from('purchases')
+    .select('*')
+    .eq('stripe_session_id', sessionId)
+    .single()
+
+  if (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    console.error('Error fetching purchase by session id:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function getPurchaseByStripePaymentId(paymentId: string): Promise<PurchaseRecord | null> {
+  const { data, error } = await supabaseAdmin
+    .from('purchases')
+    .select('*')
+    .eq('stripe_payment_id', paymentId)
+    .single()
+
+  if (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    console.error('Error fetching purchase by payment id:', error)
+    throw error
+  }
+
+  return data
+}
+
+export async function getPurchaseById(purchaseId: string): Promise<PurchaseRecord | null> {
+  const { data, error } = await supabaseAdmin
+    .from('purchases')
+    .select('*')
+    .eq('id', purchaseId)
+    .single()
+
+  if (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    console.error('Error fetching purchase by id:', error)
+    throw error
+  }
+
+  return data
+}
+
+export interface PurchaseHistoryQuery {
+  limit?: number
+  cursor?: string
+}
+
+export async function getPurchaseHistory(userId: string, params: PurchaseHistoryQuery = {}): Promise<PaginatedResult<PurchaseRecord>> {
+  const { limit = 20, cursor } = params
+
+  let query = supabaseAdmin
+    .from('purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit + 1)
+
+  if (cursor) {
+    query = query.lt('created_at', cursor)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching purchase history:', error)
+    throw error
+  }
+
+  const items = data ?? []
+  const hasMore = items.length > limit
+  const trimmed = hasMore ? items.slice(0, limit) : items
+  const nextCursor = hasMore ? trimmed[trimmed.length - 1].created_at : null
+
+  return { items: trimmed, nextCursor }
+}
+
+export async function setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<UserRecord> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .update({ stripe_customer_id: stripeCustomerId })
+    .eq('id', userId)
+    .select()
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error updating stripe customer id:', error)
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('User not found when updating Stripe customer ID')
+  }
+
+  return data
+}
+
+export async function logUsage(userId: string, action: string, creditsUsed: number = 0) {
+  const { error } = await supabaseAdmin
+    .from('usage_logs')
+    .insert({
+      user_id: userId,
+      action,
+      credits_used: creditsUsed
+    })
+
+  if (error) {
+    console.error('Error logging usage:', error)
+  }
+}
+
