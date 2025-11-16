@@ -314,7 +314,7 @@ TONE & STYLE ENFORCEMENT (MUST MATCH USER SELECTION):
 - STRICTLY adhere to the selected tone throughout the entire content
 - Maintain consistency with the selected writing style
 - Do not deviate from user's tone/style preferences
-${persona ? `\nPERSONA ENFORCEMENT (CRITICAL):\n- You MUST write in the voice and style of: ${persona.name}\n- Personality: ${persona.personality}\n- Writing style: ${persona.writingStyle}\n- Stay in character throughout the entire content\n- Match the persona's tone, vocabulary, and approach` : ''}
+${persona ? `\nPERSONA ENFORCEMENT (CRITICAL):\n- You MUST write in the voice and style of: ${persona.name}\n- Description: ${persona.description}\n- Writing style: ${persona.writingStyle}\n- Tone: ${persona.tone}\n- Stay in character throughout the entire content\n- Match the persona's tone, vocabulary, and approach` : ''}
 
 QUALITY REQUIREMENTS:
 ✓ 100% unique and original content
@@ -492,7 +492,7 @@ You are NOT an AI assistant. You are a human writer creating authentic content.`
 
     // Insert video after 3rd H2 if available
     if (videoEmbed && finalContent.includes('## ')) {
-      const h2Matches = [...finalContent.matchAll(/## /g)]
+      const h2Matches = Array.from(finalContent.matchAll(/## /g))
       if (h2Matches.length >= 3) {
         const insertIndex = h2Matches[2].index || 0
         finalContent = finalContent.slice(0, insertIndex) + videoEmbed + finalContent.slice(insertIndex)
