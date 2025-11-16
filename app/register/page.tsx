@@ -29,8 +29,18 @@ export default function RegisterPage() {
     }
 
     // Validate password length
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters')
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters')
+      return
+    }
+
+    // Validate password strength
+    const hasUpperCase = /[A-Z]/.test(formData.password)
+    const hasLowerCase = /[a-z]/.test(formData.password)
+    const hasNumber = /[0-9]/.test(formData.password)
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+      toast.error('Password must contain at least one uppercase letter, one lowercase letter, and one number')
       return
     }
 
@@ -157,12 +167,12 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 className="input-field pl-12"
                 required
-                minLength={6}
+                minLength={8}
                 disabled={isLoading}
               />
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Must be at least 6 characters
+              Must be at least 8 characters with uppercase, lowercase, and number
             </p>
           </div>
 
@@ -180,7 +190,7 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 className="input-field pl-12"
                 required
-                minLength={6}
+                minLength={8}
                 disabled={isLoading}
               />
             </div>

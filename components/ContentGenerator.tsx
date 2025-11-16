@@ -1,30 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaArrowLeft, FaMagic, FaCopy, FaDownload, FaSave } from 'react-icons/fa'
+import { FaArrowLeft, FaMagic, FaCopy, FaDownload } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 import GenerationForm from './GenerationForm'
 import ContentPreview from './ContentPreview'
+import SEOScoreCard from './SEOScoreCard'
 
 interface ContentGeneratorProps {
   contentType: string
   onBack: () => void
 }
 
-interface ProjectOption {
-  id: string
-  name: string
-}
-
 export default function ContentGenerator({ contentType, onBack }: ContentGeneratorProps) {
   const [generatedContent, setGeneratedContent] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [currentFormData, setCurrentFormData] = useState<any | null>(null)
-  const [projects, setProjects] = useState<ProjectOption[]>([])
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('')
-  const [isFetchingProjects, setIsFetchingProjects] = useState(true)
+  const [seoScore, setSeoScore] = useState<any | null>(null)
 
   const contentTypeTitles: Record<string, string> = {
     blog: 'Blog Post Generator',
@@ -33,48 +26,12 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
     affiliate: 'Affiliate Content Generator',
   }
 
-  useEffect(() => {
-    const loadProjects = async () => {
-      setIsFetchingProjects(true)
-      try {
-        const response = await fetch('/api/projects')
-        if (response.ok) {
-          const data = await response.json()
-          const mapped: ProjectOption[] = (data.projects || []).map((project: any) => ({
-            id: project.id,
-            name: project.name,
-          }))
-          setProjects(mapped)
-          if (mapped.length > 0) {
-            setSelectedProjectId(mapped[0].id)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load projects', error)
-        toast.error('Unable to load projects. Create one from the Projects tab first.')
-      } finally {
-        setIsFetchingProjects(false)
-      }
-    }
-
-    loadProjects()
-  }, [])
-
   const handleGenerate = async (formData: any) => {
     setIsGenerating(true)
     setShowPreview(false)
-    setCurrentFormData(formData)
 
     try {
-      const useAdvancedAPI =
-        formData.personaId !== 'default' ||
-        formData.useSerpAnalysis ||
-        formData.includeFAQ ||
-        formData.includeVideo
-
-      const apiEndpoint = useAdvancedAPI ? '/api/generate-advanced' : '/api/generate'
-
-      const response = await fetch(apiEndpoint, {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,29 +43,25 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to generate content')
+        const error = await response.json().catch(() => ({}))
+        if (response.status === 402) {
+          toast.error(error.error || 'Insufficient credits. Please top up to generate more content.')
+        } else if (response.status === 429) {
+          toast.error(error.error || 'You are generating too quickly. Please wait a moment and retry.')
+        } else {
+          throw new Error(error.error || 'Failed to generate content')
+        }
+        return
       }
 
       const data = await response.json()
       setGeneratedContent(data.content)
+      setSeoScore(data.seoScore || null)
       setShowPreview(true)
 
-      if (useAdvancedAPI && data.metadata) {
-        let message = 'Content generated successfully!'
-        if (data.metadata.serpAnalysis?.analyzed) {
-          message += ` (${data.metadata.serpAnalysis.competitorHeadersFound} competitor headers analyzed)`
-        }
-        if (data.metadata.faqGenerated) {
-          message += ' with FAQ'
-        }
-        if (data.metadata.videoIncluded) {
-          message += ' + video'
-        }
-        toast.success(message)
-      } else {
-        toast.success('Content generated successfully!')
-      }
+      toast.success(
+        `Generated ${data.actualWordCount.toLocaleString()} words (requested ${data.requestedWordCount.toLocaleString()}) using ${data.creditsDeducted.toLocaleString()} credits`
+      )
     } catch (error: any) {
       toast.error(error.message || 'Failed to generate content')
       console.error('Generation error:', error)
@@ -133,71 +86,6 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
     toast.success('Content downloaded!')
-  }
-
-  const handleSave = async () => {
-    if (!generatedContent) {
-      toast.error('Generate content before saving')
-      return
-    }
-
-    if (!currentFormData) {
-      toast.error('Generate content to capture the latest setup before saving')
-      return
-    }
-
-    if (!selectedProjectId) {
-      toast.error('Select a project to store this content')
-      return
-    }
-
-    try {
-      const response = await fetch('/api/contents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectId: selectedProjectId,
-          title: currentFormData.topic || 'Untitled content',
-          contentType,
-          content: generatedContent,
-          keywords: currentFormData.keywords || null,
-          status: 'draft',
-          metadata: {
-            tone: currentFormData.tone,
-            style: currentFormData.style,
-            length: currentFormData.length,
-            personaId: currentFormData.personaId,
-            audience: currentFormData.targetAudience,
-            instructions: currentFormData.additionalInstructions,
-          },
-        }),
-      })
-
-      if (response.ok) {
-        toast.success('Content saved to your project!')
-        return
-      }
-
-      const savedContent = JSON.parse(localStorage.getItem('savedContent') || '[]')
-      savedContent.push({
-        id: Date.now(),
-        type: contentType,
-        content: generatedContent,
-        date: new Date().toISOString(),
-      })
-      localStorage.setItem('savedContent', JSON.stringify(savedContent))
-      toast.success('Content saved locally! Sign in to store it in your account.')
-    } catch (error) {
-      const savedContent = JSON.parse(localStorage.getItem('savedContent') || '[]')
-      savedContent.push({
-        id: Date.now(),
-        type: contentType,
-        content: generatedContent,
-        date: new Date().toISOString(),
-      })
-      localStorage.setItem('savedContent', JSON.stringify(savedContent))
-      toast.success('Content saved locally!')
-    }
   }
 
   return (
@@ -231,51 +119,25 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
             <FaMagic className="h-3 w-3 text-indigo-500" />
             <span>Semantic optimizer engaged</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <span>Select project</span>
-            <select
-              value={selectedProjectId}
-              onChange={(event) => setSelectedProjectId(event.target.value)}
-              disabled={isFetchingProjects || projects.length === 0}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            >
-              {projects.length === 0 ? (
-                <option value="">
-                  {isFetchingProjects ? 'Loading projects...' : 'No projects available'}
-                </option>
-              ) : (
-                projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
         </div>
       </motion.div>
 
-      {!isFetchingProjects && projects.length === 0 && (
-        <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-500">
-          Create a project from the Projects tab to save generated content in a dedicated workspace.
-        </div>
-      )}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <GenerationForm contentType={contentType} onGenerate={handleGenerate} isGenerating={isGenerating} />
+          </motion.div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <GenerationForm contentType={contentType} onGenerate={handleGenerate} isGenerating={isGenerating} />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm sticky top-24 h-fit max-h-[calc(100vh-7rem)] flex flex-col"
-        >
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm sticky top-24 h-fit max-h-[calc(100vh-7rem)] flex flex-col"
+          >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-slate-900">Live preview</h3>
             {showPreview && (
@@ -293,13 +155,6 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
                   title="Download"
                 >
                   <FaDownload className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="rounded-full border border-slate-200 p-2 text-slate-500 transition-colors hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-600"
-                  title="Save to project"
-                >
-                  <FaSave className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -345,6 +200,18 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
             </AnimatePresence>
           </div>
         </motion.div>
+        </div>
+
+        {/* SEO Score Card */}
+        {seoScore && showPreview && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <SEOScoreCard seoScore={seoScore} />
+          </motion.div>
+        )}
       </div>
     </div>
   )

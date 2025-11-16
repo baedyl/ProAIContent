@@ -1,315 +1,71 @@
-# 🚀 ProAI Writer - Advanced AI Content Generation Platform
-
-![ProAI Writer Banner](https://img.shields.io/badge/AI-Content%20Generation-blue?style=for-the-badge)
-![Next.js](https://img.shields.io/badge/Next.js-14.0-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.3-38bdf8?style=for-the-badge&logo=tailwind-css)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-
-Create **SEO-optimized**, **humanized**, and **unique** content in seconds with advanced AI. Generate blog posts, product reviews, comparisons, affiliate content and more that passes AI detection tests.
-
-> **⚡ Quick Start:** [5-Minute Setup Guide](QUICKSTART.md) | **📚 Full Docs:** [Complete Setup](SETUP.md) | **🎯 All Features:** [Feature Guide](FEATURES.md)
-
-## ✨ Features
-
-### 🎯 Content Types
-- **Blog Posts** - Engaging, SEO-optimized articles that rank and convert
-- **Product Reviews** - Detailed, authentic reviews that build trust
-- **Product Comparisons** - Comprehensive comparison articles
-- **Affiliate Content** - Persuasive pages that drive conversions
-
-### 🚀 NEW: Advanced Features
-- **Writer Personas** - 11 pre-configured writing personalities
-- **SERP Analysis** - Analyze top-ranking Google results
-- **Competitor Headers** - Extract and analyze competitor content structure
-- **Auto-FAQ** - Generate FAQ from "People Also Ask" with schema markup
-- **Video Embedding** - Automatically embed relevant YouTube videos
-- **Multi-Language Support** - Optimize for different locations (US, UK, FR, DE, BR)
-
-👉 **[See Advanced Features Guide](ADVANCED_FEATURES.md)** for detailed documentation
-
-### 🧠 Advanced AI Capabilities
-- ✅ **100% Unique Content** - Every piece is original and plagiarism-free
-- ✅ **AI Detection Proof** - Advanced humanization techniques
-- ✅ **SEO Optimized** - Automatic semantic and SERP optimization
-- ✅ **Natural Language** - Varied sentence structures and vocabulary
-- ✅ **Conversion Focused** - Content designed to engage and convert
-
-### 🎨 Customization Options
-- **Tone Control** - Professional, casual, friendly, authoritative, conversational, persuasive
-- **Writing Styles** - Informative, storytelling, listicle, how-to, analytical, entertaining
-- **Content Length** - Short (500-800), Medium (800-1500), Long (1500-2500), Extra Long (2500+)
-- **Target Audience** - Customize for your specific audience
-- **SEO Keywords** - Natural keyword integration
-
-### 📊 SEO Features
-- Automatic semantic optimization
-- LSI keyword integration
-- SERP-optimized structure
-- Meta description generation
-- Heading hierarchy optimization
-- Keyword density analysis
-- Readability scoring
-
-### 🤖 Advanced Humanization (NEW v2.0)
-- **30-Point Humanization Framework** - Comprehensive approach to bypass AI detection
-- **Optimized AI Parameters** - Temperature 0.95, enhanced penalties for natural variation
-- **Automatic Contraction Injection** - Post-processing adds natural contractions
-- **Varied Sentence Structures** - Dramatic length variation (5-30 words)
-- **Conversational Tone** - Personal pronouns, casual transitions, colloquialisms
-- **Human Imperfections** - Fragments, em-dashes, parentheticals, varied paragraphs
-- **Emotional Language** - Opinions, subjective language, rhetorical questions
-- **Target Result**: 65-85% human detection on AI detectors
-
-📖 **[Complete Humanization Guide](HUMANIZATION_GUIDE.md)** | 🚀 **[Quick Tips](HUMANIZATION_QUICK_TIPS.md)**
-
-### 💾 Project Management
-- Save generated content
-- Organize by content type
-- Search and filter projects
-- Export to multiple formats
-- Copy to clipboard
-- Track creation dates
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ installed
-- OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone <your-repo-url>
-cd Wand Wiser
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Set up environment variables**
-
-Create a `.env.local` file in the root directory:
-
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4-turbo-preview
-```
-
-4. **Run the development server**
-```bash
-npm run dev
-```
-
-5. **Open your browser**
-
-Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📖 Usage
-
-### 1. Choose Content Type
-Select from blog posts, product reviews, comparisons, or affiliate content.
-
-### 2. Configure Your Content
-- Enter your topic/subject
-- Add target keywords for SEO
-- Select tone and writing style
-- Choose content length
-- Define target audience
-- Add any additional instructions
-
-### 3. Generate
-Click "Generate Content" and watch the AI create your optimized content in seconds.
-
-### 4. Review & Export
-- Preview your content
-- Copy to clipboard
-- Download as file
-- Save to projects
-
-## 🛠️ Technology Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Animations**: Framer Motion
-- **AI**: OpenAI GPT-4 Turbo
-- **Icons**: React Icons
-- **Notifications**: React Hot Toast
-- **Date Handling**: date-fns
-
-## 📁 Project Structure
-
-```
-Wand Wiser/
-├── app/
-│   ├── api/
-│   │   └── generate/
-│   │       └── route.ts          # Content generation API
-│   ├── layout.tsx                # Root layout
-│   ├── page.tsx                  # Main page
-│   └── globals.css               # Global styles
-├── components/
-│   ├── Dashboard.tsx             # Main dashboard
-│   ├── ContentGenerator.tsx     # Content generation interface
-│   ├── GenerationForm.tsx       # Form for content config
-│   ├── ContentPreview.tsx       # Content preview
-│   └── ProjectsManager.tsx      # Project management
-├── lib/
-│   ├── seo-optimizer.ts         # SEO utilities
-│   └── humanization.ts          # Humanization utilities
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-└── next.config.js
-```
-
-## 🎯 API Routes
-
-### POST `/api/generate`
-
-Generate content with AI.
-
-**Request Body:**
-```json
-{
-  "contentType": "blog",
-  "topic": "Best wireless headphones 2025",
-  "keywords": "wireless headphones, bluetooth, noise cancelling",
-  "tone": "professional",
-  "style": "informative",
-  "length": "medium",
-  "targetAudience": "Tech enthusiasts",
-  "additionalInstructions": "Focus on battery life"
-}
-```
-
-**Response:**
-```json
-{
-  "content": "# Generated content here...",
-  "metadata": {
-    "model": "gpt-4-turbo-preview",
-    "tokens": 1234,
-    "timestamp": "2025-10-30T12:00:00.000Z"
-  }
-}
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPENAI_API_KEY` | Your OpenAI API key | Required |
-| `OPENAI_MODEL` | Model to use | `gpt-4-turbo-preview` |
-| `RATE_LIMIT_MAX_REQUESTS` | Max requests per window | `100` |
-| `RATE_LIMIT_WINDOW_MS` | Rate limit window | `60000` |
-
-## 📊 SEO Optimization
-
-The platform automatically:
-- Analyzes keyword density (target: 2-3%)
-- Checks heading structure (H1, H2, H3)
-- Calculates readability score
-- Generates LSI keywords
-- Creates meta descriptions
-- Optimizes content hierarchy
-- Ensures SERP-friendly formatting
-
-## 🤖 AI Detection Prevention
-
-Advanced humanization includes:
-- Sentence variety analysis
-- Vocabulary diversity scoring
-- Natural flow detection
-- Personal touch metrics
-- AI pattern detection
-- Humanization suggestions
-
-## 🎨 Customization
-
-### Tones
-- Professional
-- Casual
-- Friendly
-- Authoritative
-- Conversational
-- Persuasive
-
-### Writing Styles
-- Informative
-- Storytelling
-- Listicle
-- How-To Guide
-- Analytical
-- Entertaining
-
-## 📈 Performance
-
-- **Generation Speed**: 5-15 seconds
-- **Quality Score**: 95%+ on average
-- **AI Detection Pass Rate**: 95%+
-- **SEO Optimization**: Automatic
-
-## 🔒 Security
-
-- API keys stored in environment variables
-- No data stored on servers
-- Client-side project storage (localStorage)
-- Secure API routes
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 💡 Tips for Best Results
-
-1. **Be Specific**: The more detailed your topic, the better the output
-2. **Use Keywords**: Add relevant SEO keywords for optimization
-3. **Target Audience**: Define your audience for better tone matching
-4. **Additional Instructions**: Provide specific requirements or points to include
-5. **Review & Edit**: Always review and customize the generated content
-
-## 🐛 Troubleshooting
-
-### API Key Issues
-- Ensure your OpenAI API key is valid and has credits
-- Check that `.env.local` is properly configured
-
-### Generation Fails
-- Verify internet connection
-- Check OpenAI service status
-- Review console for error messages
-
-### Slow Generation
-- This is normal for longer content (1500+ words)
-- Check your OpenAI rate limits
-
-## 📞 Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check the documentation
-- Review example content
-
-## 🎉 Acknowledgments
-
-- Built with Next.js and OpenAI
-- Inspired by modern content creation needs
-- Designed for content creators and marketers
-
----
-
-**Made with ❤️ for content creators who demand quality**
-
-Start generating amazing content today! 🚀
+# ProAI Content Studio
+
+Create production-ready, humanized content with precise word-count enforcement, real-time credit management, and Stripe-backed billing. This repository upgrades the original proof-of-concept into a full MVP with hardened APIs, transactional persistence, and a dashboard that keeps creators on budget.
+
+## Feature Highlights
+- Trial onboarding awards 10 000 credits automatically and tracks balances in Supabase.
+- Credit transactions, generation history, and purchases are auditable through dedicated tables and APIs.
+- Stripe Checkout handles Starter (50k), Pro (150k), and Business (350k) bundles with verified webhooks.
+- Word count validation happens before and after generation, retrying automatically if tolerance (±10 %) is breached.
+- **Dashboard:** Modern UI (Tailwind CSS + Recharts) with credit health, usage charts, quick actions, and recent generations.
+- **Authentication:** Secure login/signup with JWT tokens, rate limiting (5 attempts/15min), and password reset flow.
+- **Responsive Navigation:** Desktop and mobile-friendly navbar with credit balance badge and user dropdown.
+- **Protected Routes:** Middleware automatically secures all routes except public auth pages.
+- **Content Management:** Edit, delete, and organize content with project assignment. Full CRUD operations with intuitive modals.
+
+## Architecture & Stack
+- **Frontend:** Next.js 14 (App Router), React 18, Tailwind CSS, Recharts, SWR, Framer Motion.
+- **Backend:** Next.js API routes with NextAuth, Supabase service client, Stripe SDK, OpenAI.
+- **Database:** Supabase/PostgreSQL with migrations under `database/migrations/`.
+- **Authentication:** NextAuth with Supabase adapter, JWT sessions (24h expiry), rate limiting, password reset.
+- **Security:** httpOnly cookies, bcrypt hashing, input validation (Zod), RLS policies, CSRF protection.
+- **Testing:** Vitest unit tests for critical utilities plus ESLint for static checks.
+
+## Getting Started
+1. Clone the repo and install dependencies.
+   ```bash
+   git clone <repo-url>
+   cd ProAIContent
+   npm install
+   ```
+2. Copy `.env.example` to `.env.local` and fill in Supabase, NextAuth, OpenAI, and Stripe credentials.
+3. Apply the migration `database/migrations/20250114_add_credit_system.sql` (via Supabase SQL editor or `psql`).
+4. Seed test accounts (optional but recommended for development).
+   ```bash
+   npm run seed:test
+   ```
+5. Run the dev server.
+   ```bash
+   npm run dev
+   ```
+6. Visit `http://localhost:3000` and sign in with a test account or create a new account.
+   - Test account: `test@contentwriter.com` / `Test@123456` (100,000 credits)
+   - See `AUTHENTICATION.md` for all test accounts
+
+## Operational Notes
+- **Stripe:** Update webhook endpoint to `/api/stripe/webhook` and add the signing secret to the env file.
+- **Supabase:** Service role key is required for the `adjust_user_credits` RPC; ensure RLS policies remain enabled.
+- **OpenAI:** Default model is `gpt-4-turbo-preview`; override via `OPENAI_MODEL` if needed.
+- **Rate Limiting:** `lib/rate-limit.ts` enforces per-user throttling on generation (10 req/min).
+
+## Quality & Tooling
+- `npm run lint` — Next.js eslint rules.
+- `npm run test` — Vitest unit suite (`lib/content-constraints`, `lib/rate-limit`).
+- `npm run test:coverage` — Coverage snapshot (text + JSON summary).
+- `npm run check-db` — Verifies required Supabase tables exist.
+- `npm run seed:test` — Creates test accounts with predefined credits.
+
+## Key Directories
+- `app/api/` — Auth, credits, content, Stripe, and generation endpoints.
+- `components/` — Dashboard widgets, generation form, content preview, UI primitives.
+- `lib/` — Auth helpers, Supabase RPC wrappers, Stripe config, rate limiter, content constraints.
+- `database/migrations/` — SQL migrations including credit/purchase schema and RLS policies.
+
+## Documentation
+- `AUTHENTICATION.md` — Complete auth system guide: login, signup, password reset, rate limiting, test accounts.
+- `API_DOCUMENTATION.md` — Endpoint contract, request/response shapes, webhook notes.
+- `ADVANCED_FEATURES.md` — Personas, SERP analysis, FAQ generation, and humanization playbooks.
+- `CONTENT_MANAGEMENT.md` — Edit, delete, and organize content with project assignment features.
+- `SUPABASE_SETUP_GUIDE.md` — Detailed database provisioning steps if you need a fresh project.
+
+Enjoy building on top of ProAI Content Studio! Contributions are welcome—open an issue or PR with improvements or questions. 🚀

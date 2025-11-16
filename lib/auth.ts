@@ -6,7 +6,13 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
-import { supabaseAdmin, createDefaultUserSettings } from './supabase'
+import {
+  supabaseAdmin,
+  createDefaultUserSettings,
+  awardTrialCreditsIfNeeded,
+  getUserCreditBalance,
+} from './supabase'
+import { checkRateLimit, resetRateLimit } from './auth-rate-limit'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -22,6 +28,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email and password required')
         }
 
+        // Rate limiting: 5 attempts per 15 minutes
+        const rateLimitResult = checkRateLimit(credentials.email, {
+          maxAttempts: 5,
+          windowMs: 15 * 60 * 1000, // 15 minutes
+        })
+
+        if (!rateLimitResult.success) {
+          throw new Error(rateLimitResult.error || 'Too many login attempts')
+        }
+
         try {
           // Sign in with Supabase
           const { data, error } = await supabaseAdmin.auth.signInWithPassword({
@@ -32,6 +48,9 @@ export const authOptions: NextAuthOptions = {
           if (error || !data.user) {
             throw new Error('Invalid credentials')
           }
+
+          // Reset rate limit on successful login
+          resetRateLimit(credentials.email)
 
           return {
             id: data.user.id,
@@ -58,24 +77,69 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account }) {
-      if (user) {
-        token.id = user.id
-        token.email = user.email
-        
-        // Create default settings for new users
-        try {
-          await createDefaultUserSettings(user.id)
-        } catch (error) {
-          console.error('Error creating default settings:', error)
+      try {
+        if (user) {
+          let supabaseUserId = user.id as string | undefined
+
+          if (account?.provider === 'google' && user.email) {
+            const { data: existingUser, error } = await supabaseAdmin.auth.admin.getUserByEmail(user.email)
+            if (error) {
+              console.error('Error fetching Supabase user for Google sign-in:', error)
+            }
+            if (existingUser?.user) {
+              supabaseUserId = existingUser.user.id
+              token.email = existingUser.user.email
+            }
+          }
+
+          if (!supabaseUserId && user.email) {
+            const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(user.email)
+            if (existingUser?.user) {
+              supabaseUserId = existingUser.user.id
+            }
+          }
+
+          if (supabaseUserId) {
+            token.id = supabaseUserId
+            token.email = user.email
+            token.name = user.name
+
+            try {
+              const profile = await awardTrialCreditsIfNeeded(supabaseUserId, user.email || user.name || supabaseUserId)
+              await createDefaultUserSettings(supabaseUserId)
+              token.creditsBalance = profile.credits_balance
+            } catch (initializationError) {
+              console.error('Error initializing user profile:', initializationError)
+            }
+          }
         }
+
+        if (token.id) {
+          try {
+            token.creditsBalance = await getUserCreditBalance(token.id as string)
+          } catch (balanceError) {
+            console.error('Error fetching credit balance:', balanceError)
+          }
+        }
+      } catch (error) {
+        console.error('JWT callback error:', error)
       }
+
       return token
     },
 
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string
-        session.user.email = token.email as string
+        if (token.id) {
+          session.user.id = token.id as string
+        }
+        if (token.email) {
+          session.user.email = token.email as string
+        }
+        if (token.name) {
+          session.user.name = token.name as string
+        }
+        ;(session.user as any).creditsBalance = token.creditsBalance ?? null
       }
       return session
     },
@@ -123,7 +187,11 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 24 * 60 * 60, // 24 hours (1 day)
+  },
+
+  jwt: {
+    maxAge: 24 * 60 * 60, // 24 hours
   },
 
   secret: process.env.NEXTAUTH_SECRET,

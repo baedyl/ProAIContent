@@ -3,12 +3,31 @@ import { NextResponse } from 'next/server'
 
 export default withAuth(
   function middleware(req) {
-    // Add custom middleware logic here if needed
+    // Allow the request to proceed
     return NextResponse.next()
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl
+
+        // Public routes that don't require authentication
+        const publicRoutes = [
+          '/login',
+          '/register',
+          '/forgot-password',
+          '/reset-password',
+          '/auth/callback',
+        ]
+
+        // Check if the current path is public
+        if (publicRoutes.some(route => pathname.startsWith(route))) {
+          return true
+        }
+
+        // Protected routes require a valid token
+        return !!token
+      },
     },
     pages: {
       signIn: '/login',
@@ -16,14 +35,18 @@ export default withAuth(
   }
 )
 
-// Protect these routes - require authentication
+// Protect these routes
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/settings/:path*',
-    '/api/projects/:path*',
-    '/api/contents/:path*',
-    '/api/settings/:path*',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/auth (auth endpoints)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     * - login, register, forgot-password, reset-password (auth pages)
+     */
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|proai-writer.svg|login|register|forgot-password|reset-password|auth/callback).*)',
   ],
 }
-

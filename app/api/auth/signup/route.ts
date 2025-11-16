@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin, createDefaultUserSettings } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password, name } = await request.json()
-
-    console.log('Signup attempt for:', email)
 
     if (!email || !password) {
       return NextResponse.json(
@@ -14,55 +14,63 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate password length
-    if (password.length < 6) {
+    // Validate password length (minimum 8 characters)
+    if (password.length < 8) {
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
+        { error: 'Password must be at least 8 characters' },
         { status: 400 }
       )
     }
 
-    // Check if service role key is set
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('SUPABASE_SERVICE_ROLE_KEY is not set!')
+    // Validate password strength
+    const hasUpperCase = /[A-Z]/.test(password)
+    const hasLowerCase = /[a-z]/.test(password)
+    const hasNumber = /[0-9]/.test(password)
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
       return NextResponse.json(
-        { error: 'Server configuration error - missing service role key' },
-        { status: 500 }
+        { error: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' },
+        { status: 400 }
       )
     }
 
-    console.log('Creating user in Supabase...')
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
 
-    // Create user in Supabase
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    const supabase = createSupabaseServerClient()
+
+    // Sign up user and trigger Supabase email verification flow
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: true, // Auto-confirm for POC
-      user_metadata: {
-        name: name || email.split('@')[0],
+      options: {
+        emailRedirectTo: `${APP_URL}/auth/callback`,
+        data: {
+          name: name || email.split('@')[0],
+        }
       }
     })
 
     if (error) {
-      console.error('Supabase auth error:', error)
+      console.error('Supabase sign-up error:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 400 }
       )
     }
 
-    console.log('User created successfully:', data.user.id)
-
-    if (data.user) {
-      // Create default user settings
-      await createDefaultUserSettings(data.user.id)
-    }
-
     return NextResponse.json({
-      message: 'User created successfully',
+      message: 'Signup successful. Please check your email to verify your account.',
       user: {
-        id: data.user.id,
-        email: data.user.email,
+        id: data.user?.id,
+        email: data.user?.email,
       }
     })
 

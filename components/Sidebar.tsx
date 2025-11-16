@@ -1,13 +1,14 @@
 'use client'
 
 import { ComponentType } from 'react'
+import Link from 'next/link'
 import {
   FaClipboardList,
   FaCogs,
   FaFolderOpen,
   FaHome,
   FaLink,
-  FaMagic,
+  FaCoins,
   FaRegFileAlt,
   FaRocket,
   FaRss,
@@ -19,6 +20,9 @@ import {
 interface SidebarProps {
   activeSection: string
   onSectionChange: (tab: string) => void
+  creditsBalance?: number
+  totalCreditsUsed?: number
+  totalContentsGenerated?: number
 }
 
 interface NavItem {
@@ -29,7 +33,13 @@ interface NavItem {
   disabled?: boolean
 }
 
-export default function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+export default function Sidebar({ 
+  activeSection, 
+  onSectionChange, 
+  creditsBalance = 0,
+  totalCreditsUsed = 0,
+  totalContentsGenerated = 0
+}: SidebarProps) {
   const groups: { title: string; items: NavItem[] }[] = [
     {
       title: 'Project',
@@ -37,16 +47,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
         { id: 'dashboard', label: 'Dashboard', icon: FaHome },
         { id: 'contents', label: 'Contents', icon: FaRegFileAlt },
         { id: 'projects', label: 'Projects', icon: FaFolderOpen },
-        { id: 'personas', label: 'Personas', icon: FaUsers, disabled: true },
-      ],
-    },
-    {
-      title: 'Our fashions',
-      items: [
-        { id: 'articles-mode', label: 'Article', icon: FaRocket, disabled: true },
-        { id: 'affiliation-mode', label: 'Affiliation', icon: FaShoppingCart, disabled: true },
-        { id: 'ecommerce-mode', label: 'E-commerce', icon: FaShoppingBag, disabled: true },
-        { id: 'discover-mode', label: 'Discover', icon: FaMagic, disabled: true },
+        { id: 'personas', label: 'Personas', icon: FaUsers },
       ],
     },
     {
@@ -64,21 +65,43 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
     },
   ]
 
+  const getCreditColor = () => {
+    if (creditsBalance === 0) return 'from-red-50 to-red-100 border-red-200'
+    if (creditsBalance < 1000) return 'from-yellow-50 to-yellow-100 border-yellow-200'
+    return 'from-green-50 to-green-100 border-green-200'
+  }
+
+  const getCreditTextColor = () => {
+    if (creditsBalance === 0) return 'text-red-700'
+    if (creditsBalance < 1000) return 'text-yellow-700'
+    return 'text-green-700'
+  }
+
   return (
     <nav className="space-y-6">
-      <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200/50">
-            <FaMagic className="h-6 w-6" />
+      <div className={`rounded-2xl border bg-gradient-to-br p-6 shadow-sm ${getCreditColor()}`}>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Credits available</p>
+          <p className={`mt-1 text-2xl font-semibold ${getCreditTextColor()}`}>
+            {creditsBalance.toLocaleString()}
+          </p>
+        </div>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between text-xs text-slate-600">
+            <span>Used total</span>
+            <span className="font-medium">{totalCreditsUsed.toLocaleString()}</span>
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Magic Studio</p>
-            <h2 className="text-lg font-bold text-slate-900">Guided creation</h2>
+          <div className="flex items-center justify-between text-xs text-slate-600">
+            <span>Contents generated</span>
+            <span className="font-medium">{totalContentsGenerated.toLocaleString()}</span>
           </div>
         </div>
-        <p className="mt-4 text-sm leading-relaxed text-slate-500">
-          Navigate your workspace, launch new projects, and monitor performance in one intuitive hub.
-        </p>
+        <Link
+          href="/buy-credits"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-indigo-200 hover:bg-indigo-500 transition-colors"
+        >
+          Buy credits
+        </Link>
       </div>
 
       <div className="space-y-8">

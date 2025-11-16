@@ -1,15 +1,15 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { 
   FaNewspaper, 
   FaShoppingCart, 
   FaStar, 
   FaBalanceScale,
-  FaRocket,
-  FaSearch,
-  FaCheckCircle,
-  FaChartLine
+  FaFolderOpen,
+  FaLink,
+  FaUsers
 } from 'react-icons/fa'
 
 interface ContentTypeCard {
@@ -51,34 +51,43 @@ const contentTypes: ContentTypeCard[] = [
   }
 ]
 
-const features = [
-  {
-    icon: <FaRocket className="w-6 h-6" />,
-    title: 'Lightning Fast',
-    description: 'Generate quality content in seconds'
-  },
-  {
-    icon: <FaSearch className="w-6 h-6" />,
-    title: 'SEO Optimized',
-    description: 'Automatic semantic and SERP optimization'
-  },
-  {
-    icon: <FaCheckCircle className="w-6 h-6" />,
-    title: 'AI Detection Proof',
-    description: 'Humanized content that passes AI detectors'
-  },
-  {
-    icon: <FaChartLine className="w-6 h-6" />,
-    title: 'Conversion Focused',
-    description: 'Content designed to engage and convert'
-  }
-]
-
-interface DashboardProps {
-  onContentTypeSelect: (type: string) => void
+interface QuickLink {
+  id: string
+  title: string
+  description: string
+  icon: React.ReactNode
+  color: string
+  onClick?: () => void
+  href?: string
 }
 
-export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
+export default function Dashboard({ onContentTypeSelect, onSectionChange }: DashboardProps) {
+  const quickLinks: QuickLink[] = [
+    {
+      id: 'projects',
+      title: 'Projects',
+      description: 'Organize your content into projects',
+      icon: <FaFolderOpen className="w-6 h-6" />,
+      color: 'from-indigo-500 to-purple-500',
+      onClick: () => onSectionChange?.('projects')
+    },
+    {
+      id: 'personas',
+      title: 'Personas',
+      description: 'Manage your writing personas',
+      icon: <FaUsers className="w-6 h-6" />,
+      color: 'from-teal-500 to-cyan-500',
+      onClick: () => onSectionChange?.('personas')
+    },
+    {
+      id: 'connections',
+      title: 'Connections',
+      description: 'Connect to WordPress and other platforms (Coming Soon)',
+      icon: <FaLink className="w-6 h-6" />,
+      color: 'from-slate-400 to-slate-500',
+    }
+  ]
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -145,53 +154,33 @@ export default function Dashboard({ onContentTypeSelect }: DashboardProps) {
         ))}
       </motion.div>
 
-      {/* Features Section */}
+      {/* Quick Links Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="rounded-3xl border border-slate-200 bg-white p-10 shadow-sm"
       >
-        <h3 className="text-2xl font-bold text-center mb-8 gradient-text">
-          Why teams choose ProAI Writer
+        <h3 className="text-2xl font-bold mb-6 text-slate-900">
+          Quick Access
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {quickLinks.map((link) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + index * 0.1 }}
-              className="text-center space-y-3"
+              key={link.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={link.onClick}
+              className={`rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg ${
+                link.id === 'connections' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-200/60">
-                {feature.icon}
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${link.color} flex items-center justify-center text-white mb-4`}>
+                {link.icon}
               </div>
-              <h4 className="font-semibold text-slate-900">{feature.title}</h4>
-              <p className="text-sm text-slate-500 leading-relaxed">{feature.description}</p>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">{link.title}</h4>
+              <p className="text-sm text-slate-500">{link.description}</p>
             </motion.div>
           ))}
-        </div>
-      </motion.div>
-
-      {/* Stats Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-      >
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <div className="text-4xl font-bold text-slate-900 mb-2">10,000+</div>
-          <div className="text-slate-500">Content pieces generated</div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <div className="text-4xl font-bold text-slate-900 mb-2">95%</div>
-          <div className="text-slate-500">AI detection pass rate</div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <div className="text-4xl font-bold text-slate-900 mb-2">4.8/5</div>
-          <div className="text-slate-500">Average user rating</div>
         </div>
       </motion.div>
     </div>

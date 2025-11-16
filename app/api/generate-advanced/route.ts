@@ -3,6 +3,11 @@ import OpenAI from 'openai'
 import { getPersona, buildPersonaPrompt } from '@/lib/personas'
 import { analyzeSERP, extractCompetitorHeaders, buildSerpEnhancedPrompt, searchYouTubeVideo } from '@/lib/serp-analysis'
 import { generateFAQPrompt, parseFAQResponse, generateFAQHTML, getFAQStyles } from '@/lib/faq-generator'
+import { 
+  analyzeSERP as analyzeIntelligentSERP, 
+  calculateSEOScore,
+  type SERPAnalysisResult 
+} from '@/lib/serp-analyzer'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -158,12 +163,48 @@ function humanizeContent(content: string): string {
   return humanized
 }
 
-function buildAdvancedPrompt(data: AdvancedGenerateRequest, serpData?: any, competitorHeaders?: string[]): string {
+function buildAdvancedPrompt(
+  data: AdvancedGenerateRequest, 
+  serpData?: any, 
+  competitorHeaders?: string[],
+  intelligentSerpAnalysis?: SERPAnalysisResult | null
+): string {
   const lengthGuide = lengthGuides[data.length] || '800-1500 words'
   
   // Get persona if specified
   const persona = data.personaId ? getPersona(data.personaId) : null
   const personaPrompt = persona ? buildPersonaPrompt(persona) : ''
+  
+  // Build SERP-enhanced keyword section
+  let serpKeywordSection = ''
+  if (intelligentSerpAnalysis) {
+    const { aggregatedKeywords, recommendations } = intelligentSerpAnalysis
+    
+    serpKeywordSection = `
+INTELLIGENT SERP ANALYSIS RESULTS:
+
+PRIMARY KEYWORDS (from top-ranking pages):
+${aggregatedKeywords.mainKeywords.slice(0, 10).join(', ')}
+
+LSI KEYWORDS (semantic variations - MUST include naturally):
+${aggregatedKeywords.lsiKeywords.slice(0, 15).join(', ')}
+
+RELATED ENTITIES (capitalize these properly):
+${aggregatedKeywords.entities.slice(0, 10).join(', ')}
+
+SYNONYMS TO USE:
+${aggregatedKeywords.synonyms.slice(0, 10).join(', ')}
+
+SERP-BASED RECOMMENDATIONS:
+${recommendations.map(r => `- ${r}`).join('\n')}
+
+KEYWORD DENSITY TARGETS:
+${Object.entries(aggregatedKeywords.keywordDensity)
+  .slice(0, 5)
+  .map(([kw, density]) => `- "${kw}": ${density.toFixed(2)}% (aim for 2-3%)`)
+  .join('\n')}
+`
+  }
   
   let contentTypeInstructions = ''
   
@@ -217,6 +258,11 @@ function buildAdvancedPrompt(data: AdvancedGenerateRequest, serpData?: any, comp
     ? `TARGET KEYWORDS TO NATURALLY INCORPORATE: ${data.keywords}` 
     : ''
   
+  // Combine user keywords with SERP keywords
+  const enhancedKeywordsSection = serpKeywordSection 
+    ? `${keywordsSection}\n\n${serpKeywordSection}` 
+    : keywordsSection
+  
   const audienceSection = data.targetAudience 
     ? `TARGET AUDIENCE: ${data.targetAudience}` 
     : ''
@@ -239,7 +285,7 @@ ${contentTypeInstructions}
 
 TOPIC: ${data.topic}
 
-${keywordsSection}
+${enhancedKeywordsSection}
 
 WRITING SPECIFICATIONS:
 - Tone: ${data.tone}
@@ -313,6 +359,7 @@ export async function POST(request: NextRequest) {
     let competitorHeaders: string[] = []
     let faqHTML = ''
     let videoEmbed = ''
+    let intelligentSerpAnalysis: SERPAnalysisResult | null = null
 
     // SERP Analysis if requested
     if (data.useSerpAnalysis && process.env.SERPAPI_KEY) {
@@ -332,8 +379,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Intelligent SERP Analysis (always runs for better SEO)
+    try {
+      console.log('Performing intelligent SERP analysis...')
+      intelligentSerpAnalysis = await analyzeIntelligentSERP(data.topic, data.location || 'us')
+      console.log('SERP analysis complete:', {
+        mainKeywords: intelligentSerpAnalysis.aggregatedKeywords.mainKeywords.length,
+        lsiKeywords: intelligentSerpAnalysis.aggregatedKeywords.lsiKeywords.length,
+        recommendations: intelligentSerpAnalysis.recommendations.length
+      })
+    } catch (error) {
+      console.error('Intelligent SERP analysis error:', error)
+      // Continue without intelligent analysis
+    }
+
     // Build the main content prompt
-    const prompt = buildAdvancedPrompt(data, serpData, competitorHeaders)
+    const prompt = buildAdvancedPrompt(data, serpData, competitorHeaders, intelligentSerpAnalysis)
 
     // Generate main content with enhanced humanization
     console.log('Generating main content...')
@@ -446,9 +507,36 @@ You are NOT an AI assistant. You are a human writer creating authentic content.`
       finalContent += '\n\n' + faqHTML
     }
 
+    // Calculate SEO Score
+    let seoScore = null
+    if (intelligentSerpAnalysis) {
+      try {
+        const keywords = [
+          ...data.keywords.split(',').map(k => k.trim()),
+          ...intelligentSerpAnalysis.aggregatedKeywords.mainKeywords.slice(0, 5)
+        ]
+        
+        // Extract title from content (first H1)
+        const titleMatch = finalContent.match(/^#\s+(.+)$/m)
+        const title = titleMatch ? titleMatch[1] : data.topic
+        
+        seoScore = calculateSEOScore(
+          finalContent,
+          title,
+          keywords,
+          intelligentSerpAnalysis
+        )
+        
+        console.log('SEO Score calculated:', seoScore.score)
+      } catch (error) {
+        console.error('SEO score calculation error:', error)
+      }
+    }
+
     // Return enhanced response
     return NextResponse.json({
       content: finalContent,
+      seoScore,
       metadata: {
         model: completion.model,
         tokens: completion.usage?.total_tokens || 0,
@@ -458,6 +546,14 @@ You are NOT an AI assistant. You are a human writer creating authentic content.`
           totalResults: serpData.totalResults,
           competitorHeadersFound: competitorHeaders.length,
           relatedQuestionsFound: serpData.peopleAlsoAsk.length
+        } : null,
+        intelligentSerpAnalysis: intelligentSerpAnalysis ? {
+          analyzed: true,
+          mainKeywords: intelligentSerpAnalysis.aggregatedKeywords.mainKeywords.length,
+          lsiKeywords: intelligentSerpAnalysis.aggregatedKeywords.lsiKeywords.length,
+          entities: intelligentSerpAnalysis.aggregatedKeywords.entities.length,
+          recommendations: intelligentSerpAnalysis.recommendations.length,
+          targetWordCount: intelligentSerpAnalysis.commonStructures.wordCount
         } : null,
         faqGenerated: faqHTML.length > 0,
         videoIncluded: videoEmbed.length > 0,

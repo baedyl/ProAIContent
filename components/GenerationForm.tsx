@@ -1,9 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaMagic, FaInfoCircle, FaStar, FaRobot, FaSearch, FaQuestionCircle, FaYoutube } from 'react-icons/fa'
 import { getAllPersonas } from '@/lib/personas'
+import toast from 'react-hot-toast'
+import { MIN_WORD_COUNT, MAX_WORD_COUNT } from '@/lib/content-constraints'
+
+interface UserPersona {
+  id: string
+  name: string
+  avatar: string
+  style: string
+  description?: string
+  is_default: boolean
+}
 
 interface GenerationFormProps {
   contentType: string
@@ -29,21 +40,19 @@ const styles = [
   { value: 'entertaining', label: 'Entertaining' }
 ]
 
-const lengths = [
-  { value: 'short', label: 'Short (500-800 words)' },
-  { value: 'medium', label: 'Medium (800-1500 words)' },
-  { value: 'long', label: 'Long (1500-2500 words)' },
-  { value: 'extra-long', label: 'Extra Long (2500+ words)' }
-]
-
 export default function GenerationForm({ contentType, onGenerate, isGenerating }: GenerationFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [useRange, setUseRange] = useState(true) // Default to range mode
+  const [userPersonas, setUserPersonas] = useState<UserPersona[]>([])
+  const [isLoadingPersonas, setIsLoadingPersonas] = useState(false)
   const [formData, setFormData] = useState({
     topic: '',
     keywords: '',
     tone: 'professional',
     style: 'informative',
-    length: 'medium',
+    wordCount: 800,
+    minWords: 600,
+    maxWords: 1000,
     targetAudience: '',
     additionalInstructions: '',
     // Advanced options
@@ -55,17 +64,82 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
     location: 'us'
   })
 
-  const personas = getAllPersonas()
+  const systemPersonas = getAllPersonas()
+
+  // Fetch user personas
+  useEffect(() => {
+    const fetchUserPersonas = async () => {
+      setIsLoadingPersonas(true)
+      try {
+        const response = await fetch('/api/personas')
+        if (response.ok) {
+          const data = await response.json()
+          setUserPersonas(data.personas || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch user personas:', error)
+      } finally {
+        setIsLoadingPersonas(false)
+      }
+    }
+    fetchUserPersonas()
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onGenerate(formData)
+    
+    if (useRange) {
+      // Validate range
+      if (
+        formData.minWords < MIN_WORD_COUNT ||
+        formData.maxWords > MAX_WORD_COUNT ||
+        Number.isNaN(formData.minWords) ||
+        Number.isNaN(formData.maxWords)
+      ) {
+        toast.error(
+          `Word count range must be between ${MIN_WORD_COUNT.toLocaleString()} and ${MAX_WORD_COUNT.toLocaleString()} words`
+        )
+        return
+      }
+      if (formData.minWords >= formData.maxWords) {
+        toast.error('Minimum words must be less than maximum words')
+        return
+      }
+      // Send range to API
+      onGenerate({
+        ...formData,
+        minWords: formData.minWords,
+        maxWords: formData.maxWords,
+        wordCount: undefined, // Don't send wordCount when using range
+      })
+    } else {
+      // Validate single value
+      if (
+        formData.wordCount < MIN_WORD_COUNT ||
+        formData.wordCount > MAX_WORD_COUNT ||
+        Number.isNaN(formData.wordCount)
+      ) {
+        toast.error(
+          `Word count must be between ${MIN_WORD_COUNT.toLocaleString()} and ${MAX_WORD_COUNT.toLocaleString()} words`
+        )
+        return
+      }
+      // Send single value to API
+      onGenerate({
+        ...formData,
+        wordCount: formData.wordCount,
+        minWords: undefined,
+        maxWords: undefined,
+      })
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    const isNumberField = name === 'wordCount' || name === 'minWords' || name === 'maxWords'
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: isNumberField ? Number(value) : value
     }))
   }
 
@@ -157,23 +231,84 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
           </select>
         </div>
 
-        {/* Length */}
+        {/* Word Count */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Content Length
-          </label>
-          <select
-            name="length"
-            value={formData.length}
-            onChange={handleChange}
-            className="input-field"
-          >
-            {lengths.map(length => (
-              <option key={length.value} value={length.value}>
-                {length.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-semibold text-slate-700">
+              Word Count *
+            </label>
+            <button
+              type="button"
+              onClick={() => setUseRange(!useRange)}
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              {useRange ? 'Use fixed count' : 'Use range'}
+            </button>
+          </div>
+          
+          {useRange ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-slate-600 mb-1">Minimum</label>
+                <input
+                  type="number"
+                  name="minWords"
+                  value={formData.minWords}
+                  onChange={handleChange}
+                  min={MIN_WORD_COUNT}
+                  max={MAX_WORD_COUNT}
+                  step={50}
+                  className="input-field"
+                  placeholder="e.g. 600"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-600 mb-1">Maximum</label>
+                <input
+                  type="number"
+                  name="maxWords"
+                  value={formData.maxWords}
+                  onChange={handleChange}
+                  min={MIN_WORD_COUNT}
+                  max={MAX_WORD_COUNT}
+                  step={50}
+                  className="input-field"
+                  placeholder="e.g. 1000"
+                />
+              </div>
+            </div>
+          ) : (
+            <input
+              type="number"
+              name="wordCount"
+              value={formData.wordCount}
+              onChange={handleChange}
+              min={MIN_WORD_COUNT}
+              max={MAX_WORD_COUNT}
+              step={50}
+              className="input-field"
+              placeholder="e.g. 800"
+            />
+          )}
+          
+          <p className="text-xs text-slate-500 mt-2">
+            {useRange ? (
+              <>
+                Estimated credits: <span className="font-semibold text-indigo-600">
+                  {formData.minWords.toLocaleString()} - {formData.maxWords.toLocaleString()}
+                </span> (AI will generate within this range)
+              </>
+            ) : (
+              <>
+                Estimated credits: <span className="font-semibold text-indigo-600">
+                  {Math.max(formData.wordCount || 0, 0).toLocaleString()}
+                </span> (±20% tolerance applied)
+              </>
+            )}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            💡 <strong>Tip:</strong> Using a range gives the AI more flexibility and increases success rate
+          </p>
         </div>
 
         {/* Target Audience */}
@@ -240,15 +375,34 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                 value={formData.personaId}
                 onChange={handleChange}
                 className="input-field"
+                disabled={isLoadingPersonas}
               >
-                {personas.map(persona => (
-                  <option key={persona.id} value={persona.id}>
-                    {persona.name} - {persona.description}
-                  </option>
-                ))}
+                {/* User Personas */}
+                {userPersonas.length > 0 && (
+                  <optgroup label="✨ My Personas">
+                    {userPersonas.map(persona => (
+                      <option key={`user-${persona.id}`} value={`user-${persona.id}`}>
+                        {persona.name}{persona.description ? ` - ${persona.description}` : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                
+                {/* System Personas */}
+                <optgroup label="📚 System Personas">
+                  {systemPersonas.map(persona => (
+                    <option key={persona.id} value={persona.id}>
+                      {persona.name} - {persona.description}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
               <p className="text-xs text-slate-500 mt-1">
-                Choose a pre-configured writing personality and style
+                {isLoadingPersonas 
+                  ? 'Loading your personas...' 
+                  : userPersonas.length > 0
+                    ? 'Choose from your custom personas or system personas'
+                    : 'Choose a pre-configured writing personality and style'}
               </p>
             </div>
 
@@ -400,7 +554,11 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
 
       {/* Credits Info */}
       <p className="text-center text-xs text-slate-500">
-        This will use approximately 5-10 credits depending on length
+        {useRange ? (
+          <>Estimated usage: {formData.minWords.toLocaleString()} - {formData.maxWords.toLocaleString()} credits per generation</>
+        ) : (
+          <>Estimated usage: {Math.max(formData.wordCount || 0, 0).toLocaleString()} credits per generation</>
+        )}
       </p>
     </motion.form>
   )

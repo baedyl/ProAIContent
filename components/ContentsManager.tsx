@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
-import { FaFilter, FaSearch, FaTable, FaThLarge } from 'react-icons/fa'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FaFilter, FaSearch, FaTable, FaThLarge, FaEdit, FaTrash, FaFolder, FaTimes, FaSave } from 'react-icons/fa'
+import toast from 'react-hot-toast'
 
 interface Project {
   id: string
@@ -22,15 +23,20 @@ interface ContentItem {
   project_id: string
   user_id: string
   title: string
-  content_type: string
-  status: string
-  is_published: boolean
-  published_at: string | null
   content: string
-  keywords: string | null
-  metadata: any
+  word_count: number
+  credits_used: number
+  requested_length: number
+  settings: {
+    contentType?: string
+    keywords?: string
+    [key: string]: any
+  }
+  status: string
+  retry_count: number
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
@@ -64,6 +70,12 @@ export default function ContentsManager() {
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Modal states
+  const [editingContent, setEditingContent] = useState<ContentItem | null>(null)
+  const [assigningContent, setAssigningContent] = useState<ContentItem | null>(null)
+  const [deletingContent, setDeletingContent] = useState<ContentItem | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,16 +108,18 @@ export default function ContentsManager() {
 
   const filteredContents = useMemo(() => {
     return contents.filter((item) => {
+      const contentType = item.settings?.contentType || 'blog'
+      const keywords = item.settings?.keywords || ''
       const matchesProject = selectedProject === 'all' || item.project_id === selectedProject
       const matchesTab =
         activeTab === 'all' ||
-        (activeTab === 'pages' && ['page', 'landing'].includes(item.content_type)) ||
-        item.content_type === activeTab
+        (activeTab === 'pages' && ['page', 'landing'].includes(contentType)) ||
+        contentType === activeTab
       const matchesStatus = selectedStatus === 'all' || item.status === selectedStatus
       const matchesSearch =
         !searchTerm ||
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.keywords || '').toLowerCase().includes(searchTerm.toLowerCase())
+        keywords.toLowerCase().includes(searchTerm.toLowerCase())
 
       return matchesProject && matchesTab && matchesStatus && matchesSearch
     })
@@ -118,6 +132,78 @@ export default function ContentsManager() {
     projects.forEach((project) => map.set(project.id, project))
     return map
   }, [projects])
+
+  const handleEdit = async (content: ContentItem, updates: { title?: string; content?: string }) => {
+    setIsSaving(true)
+    try {
+      const response = await fetch(`/api/contents/${content.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update content')
+      }
+
+      const data = await response.json()
+      setContents(prev => prev.map(c => c.id === content.id ? data.content : c))
+      setEditingContent(null)
+      toast.success('Content updated successfully')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update content')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDelete = async (content: ContentItem) => {
+    setIsSaving(true)
+    try {
+      const response = await fetch(`/api/contents/${content.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to delete content')
+      }
+
+      setContents(prev => prev.filter(c => c.id !== content.id))
+      setDeletingContent(null)
+      toast.success('Content deleted successfully')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete content')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleAssignToProject = async (content: ContentItem, projectId: string | null) => {
+    setIsSaving(true)
+    try {
+      const response = await fetch(`/api/contents/${content.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: projectId }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to assign content to project')
+      }
+
+      const data = await response.json()
+      setContents(prev => prev.map(c => c.id === content.id ? data.content : c))
+      setAssigningContent(null)
+      toast.success(projectId ? 'Content assigned to project' : 'Content removed from project')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update content')
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -267,20 +353,22 @@ export default function ContentsManager() {
                   <th className="px-6 py-3 font-semibold">Status</th>
                   <th className="px-6 py-3 font-semibold">Published?</th>
                   <th className="px-6 py-3 font-semibold">Last update</th>
+                  <th className="px-6 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredContents.map((item) => {
                   const project = projectsMap.get(item.project_id)
-                  const typeLabel = CONTENT_TYPE_LABELS[item.content_type] || item.content_type
+                  const contentType = item.settings?.contentType || 'blog'
+                  const typeLabel = CONTENT_TYPE_LABELS[contentType] || contentType
                   const statusLabel = STATUS_LABELS[item.status] || item.status
 
                   return (
                     <tr key={item.id} className="hover:bg-indigo-50/40">
                       <td className="px-6 py-4 text-slate-900 font-medium">
                         <div>{item.title}</div>
-                        {item.keywords && (
-                          <div className="mt-1 text-xs text-slate-400">{item.keywords}</div>
+                        {item.settings?.keywords && (
+                          <div className="mt-1 text-xs text-slate-400">{item.settings.keywords}</div>
                         )}
                       </td>
                       <td className="px-6 py-4 text-slate-500">{project?.name || '—'}</td>
@@ -304,6 +392,31 @@ export default function ContentsManager() {
                       <td className="px-6 py-4 text-slate-400">
                         {new Date(item.updated_at).toLocaleString()}
                       </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditingContent(item)}
+                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Edit content"
+                          >
+                            <FaEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setAssigningContent(item)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Assign to project"
+                          >
+                            <FaFolder className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeletingContent(item)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete content"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   )
                 })}
@@ -314,7 +427,8 @@ export default function ContentsManager() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredContents.map((item) => {
               const project = projectsMap.get(item.project_id)
-              const typeLabel = CONTENT_TYPE_LABELS[item.content_type] || item.content_type
+              const contentType = item.settings?.contentType || 'blog'
+              const typeLabel = CONTENT_TYPE_LABELS[contentType] || contentType
 
               return (
                 <div
@@ -339,12 +453,211 @@ export default function ContentsManager() {
                       {STATUS_LABELS[item.status] || item.status}
                     </span>
                   </div>
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => setEditingContent(item)}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      title="Edit content"
+                    >
+                      <FaEdit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setAssigningContent(item)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Assign to project"
+                    >
+                      <FaFolder className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeletingContent(item)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete content"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )
             })}
           </div>
         )}
       </motion.div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingContent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900">Edit Content</h3>
+                <button
+                  onClick={() => setEditingContent(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Title</label>
+                  <input
+                    type="text"
+                    defaultValue={editingContent.title}
+                    id="edit-title"
+                    className="input-field"
+                    placeholder="Enter title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Content</label>
+                  <textarea
+                    defaultValue={editingContent.content}
+                    id="edit-content"
+                    rows={12}
+                    className="textarea-field"
+                    placeholder="Enter content"
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => setEditingContent(null)}
+                    className="btn-secondary"
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      const title = (document.getElementById('edit-title') as HTMLInputElement)?.value
+                      const content = (document.getElementById('edit-content') as HTMLTextAreaElement)?.value
+                      handleEdit(editingContent, { title, content })
+                    }}
+                    className="btn-primary flex items-center gap-2"
+                    disabled={isSaving}
+                  >
+                    <FaSave />
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Assign to Project Modal */}
+      <AnimatePresence>
+        {assigningContent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+            >
+              <div className="border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900">Assign to Project</h3>
+                <button
+                  onClick={() => setAssigningContent(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Select Project
+                  </label>
+                  <select
+                    id="assign-project"
+                    defaultValue={assigningContent.project_id || ''}
+                    className="input-field"
+                  >
+                    <option value="">No Project (Remove from project)</option>
+                    {projects.map(project => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => setAssigningContent(null)}
+                    className="btn-secondary"
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      const projectId = (document.getElementById('assign-project') as HTMLSelectElement)?.value || null
+                      handleAssignToProject(assigningContent, projectId)
+                    }}
+                    className="btn-primary flex items-center gap-2"
+                    disabled={isSaving}
+                  >
+                    <FaFolder />
+                    {isSaving ? 'Assigning...' : 'Assign'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deletingContent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+            >
+              <div className="border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900">Delete Content</h3>
+                <button
+                  onClick={() => setDeletingContent(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-slate-600">
+                  Are you sure you want to delete <strong>"{deletingContent.title}"</strong>? This action cannot be undone.
+                </p>
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => setDeletingContent(null)}
+                    className="btn-secondary"
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleDelete(deletingContent)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors flex items-center gap-2"
+                    disabled={isSaving}
+                  >
+                    <FaTrash />
+                    {isSaving ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { supabaseAdmin, logUsage } from '@/lib/supabase'
+import {
+  getGeneratedContentById,
+  updateGeneratedContentRecord,
+  softDeleteGeneratedContent,
+} from '@/lib/supabase'
+
+const MIN_WORD_COUNT = 50
+
+function countWords(content: string): number {
+  return content
+    .replace(/[#*_`>\\-]/g, ' ')
+    .trim()
+    .split(/\\s+/)
+    .filter(Boolean).length
+}
 
 /**
  * GET - Fetch a single content item
@@ -17,21 +31,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('project_contents')
-      .select('*')
-      .eq('id', params.id)
-      .eq('user_id', session.user.id)
-      .single()
+    const content = await getGeneratedContentById(session.user.id, params.id)
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Content not found' }, { status: 404 })
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (!content || content.deleted_at) {
+      return NextResponse.json({ error: 'Content not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ content: data })
+    return NextResponse.json({ content })
   } catch (error: any) {
     console.error('Content GET error:', error)
     return NextResponse.json(
@@ -55,37 +61,43 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const updates = await request.json()
+    const body = await request.json()
 
-    delete updates.id
-    delete updates.user_id
-    delete updates.project_id
-    delete updates.created_at
+    const payload: Record<string, any> = {}
 
-    if (updates.is_published && !updates.published_at) {
-      updates.published_at = new Date().toISOString()
+    if (typeof body.title === 'string') {
+      payload.title = body.title.trim()
     }
 
-    if (updates.is_published === false) {
-      updates.published_at = null
+    if (typeof body.content === 'string') {
+      payload.content = body.content
+      payload.word_count = countWords(body.content)
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('project_contents')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', params.id)
-      .eq('user_id', session.user.id)
-      .select()
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Content not found' }, { status: 404 })
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (typeof body.requested_length === 'number') {
+      payload.requested_length = Math.max(body.requested_length, MIN_WORD_COUNT)
     }
 
-    return NextResponse.json({ content: data })
+    if (body.settings) {
+      payload.settings = body.settings
+    }
+
+    // Support assigning/removing from project
+    if (body.project_id !== undefined) {
+      // null or empty string removes from project, otherwise assigns to project
+      payload.project_id = body.project_id || null
+    }
+
+    if (Object.keys(payload).length === 0) {
+      return NextResponse.json(
+        { error: 'No valid fields provided for update' },
+        { status: 400 }
+      )
+    }
+
+    const updated = await updateGeneratedContentRecord(session.user.id, params.id, payload)
+
+    return NextResponse.json({ content: updated })
   } catch (error: any) {
     console.error('Content PATCH error:', error)
     return NextResponse.json(
@@ -109,17 +121,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { error } = await supabaseAdmin
-      .from('project_contents')
-      .delete()
-      .eq('id', params.id)
-      .eq('user_id', session.user.id)
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    await logUsage(session.user.id, 'content_deleted', 0)
+    await softDeleteGeneratedContent(session.user.id, params.id)
 
     return NextResponse.json({ message: 'Content deleted successfully' })
   } catch (error: any) {
