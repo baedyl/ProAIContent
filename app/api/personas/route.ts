@@ -70,8 +70,7 @@ export async function POST(request: NextRequest) {
 
     // If this is set as default, unset all other defaults first
     if (data.is_default) {
-      await supabaseAdmin
-        .from('personas')
+      await (supabaseAdmin.from('personas') as any)
         .update({ is_default: false })
         .eq('user_id', session.user.id)
     }
