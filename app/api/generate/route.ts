@@ -324,7 +324,13 @@ ${video}
         wordCount: actualWordCount,
         creditsUsed: creditsToDeduct,
         requestedLength: targetWordCount,
-        settings: settingsPayload,
+        settings: JSON.parse(
+          JSON.stringify(
+            Object.fromEntries(
+              Object.entries(settingsPayload).filter(([_, v]) => v !== undefined)
+            )
+          )
+        ),
         retryCount: attemptCount - 1,
         status: 'completed',
       })
