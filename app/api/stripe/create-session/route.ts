@@ -83,8 +83,8 @@ export async function POST(request: NextRequest) {
           },
         },
       ],
-      success_url: `${APP_URL}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${APP_URL}/dashboard?checkout=cancel`,
+      success_url: `${APP_URL}/buy-credits?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_URL}/buy-credits?checkout=cancel`,
       metadata: {
         userId: session.user.id,
         packageId: selectedPackage.id,
