@@ -79,7 +79,7 @@ export async function PATCH(
     if (updates.is_default) {
       await supabaseAdmin
         .from('personas')
-        .update({ is_default: false })
+        .update({ is_default: false } as never)
         .eq('user_id', session.user.id)
         .neq('id', params.id)
     }
