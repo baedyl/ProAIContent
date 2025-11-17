@@ -4,7 +4,7 @@
  */
 
 import { getJson } from 'serpapi'
-import cheerio from 'cheerio'
+import * as cheerio from 'cheerio'
 
 export interface SerpResult {
   position: number
