@@ -36,7 +36,6 @@ interface NavLink {
 const navLinks: NavLink[] = [
   { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: FaHome },
   { id: 'generate', href: '/', label: 'Generate Content', icon: FaMagic },
-  { id: 'contents', href: '/', label: 'My Content', icon: FaFileAlt },
   { id: 'buy-credits', href: '/buy-credits', label: 'Buy Credits', icon: FaShoppingCart },
 ]
 

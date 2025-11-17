@@ -34,18 +34,20 @@ export function isWithinTolerance(wordCount: number, lower: number, upper: numbe
   return wordCount >= lower && wordCount <= upper
 }
 
-export function calculateMaxTokens(targetWordCount: number, model?: string): number {
-  // Get the model's token limit
-  const modelLimit = model ? MODEL_TOKEN_LIMITS[model] || DEFAULT_MAX_TOKENS : DEFAULT_MAX_TOKENS
-  
-  // Calculate tokens needed based on word count
-  // Average: 1 word ≈ 1.3 tokens, but we use 1.5 for safety
+export function getModelTokenLimit(model?: string): number {
+  return model ? MODEL_TOKEN_LIMITS[model] || DEFAULT_MAX_TOKENS : DEFAULT_MAX_TOKENS
+}
+
+export interface TokenBudget {
+  estimatedTokens: number
+  maxSafeTokens: number
+}
+
+export function calculateTokenBudget(targetWordCount: number, model?: string): TokenBudget {
+  const modelLimit = getModelTokenLimit(model)
+  const maxSafeTokens = Math.floor(modelLimit * 0.95)
   const estimatedTokens = Math.ceil(targetWordCount * TOKENS_PER_WORD_MULTIPLIER)
-  
-  // Never exceed the model's limit, and leave some buffer for formatting
-  const maxSafeTokens = Math.floor(modelLimit * 0.95) // 5% buffer
-  
-  return Math.min(maxSafeTokens, estimatedTokens)
+  return { estimatedTokens, maxSafeTokens }
 }
 
 export function countWords(content: string): number {
