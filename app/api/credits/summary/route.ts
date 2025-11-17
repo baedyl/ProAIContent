@@ -50,11 +50,14 @@ export async function GET(request: NextRequest) {
     ])
 
     // Sum up all usage transactions (they are negative, so we take absolute value)
+    const totalUsageRecords = (totalUsageResponse.data || []) as Array<{ amount?: number }>
+    const monthlyUsageRecords = (monthlyUsageResponse.data || []) as Array<{ amount?: number }>
+
     const totalUsage = Math.abs(
-      (totalUsageResponse.data || []).reduce((sum, txn) => sum + (txn.amount || 0), 0)
+      totalUsageRecords.reduce((sum, txn) => sum + (txn.amount || 0), 0)
     )
     const usageThisMonth = Math.abs(
-      (monthlyUsageResponse.data || []).reduce((sum, txn) => sum + (txn.amount || 0), 0)
+      monthlyUsageRecords.reduce((sum, txn) => sum + (txn.amount || 0), 0)
     )
     const totalContents = totalContentResponse.count ?? 0
     const contentsThisMonth = monthlyContentResponse.count ?? 0
