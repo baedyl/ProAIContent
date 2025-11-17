@@ -318,7 +318,7 @@ function generateSynonyms(keywords: string[]): string[] {
     })
   })
 
-  return [...new Set(synonyms)].slice(0, 15)
+  return Array.from(new Set(synonyms)).slice(0, 15)
 }
 
 /**
@@ -354,9 +354,9 @@ function analyzeCommonStructures(analyses: Array<PageAnalysis | null>): ContentS
 
   return {
     headings: {
-      h1: [...new Set(allH1s)].slice(0, 5),
-      h2: [...new Set(allH2s)].slice(0, 10),
-      h3: [...new Set(allH3s)].slice(0, 15),
+      h1: Array.from(new Set(allH1s)).slice(0, 5),
+      h2: Array.from(new Set(allH2s)).slice(0, 10),
+      h3: Array.from(new Set(allH3s)).slice(0, 15),
     },
     wordCount: avgWordCount,
     paragraphCount: avgParagraphCount,

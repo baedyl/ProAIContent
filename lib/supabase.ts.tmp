@@ -578,7 +578,7 @@ export async function ensureUserProfile(userId: string, email: string): Promise<
         id: userId,
         email,
         last_login_at: now
-      } as never)
+      })
       .select()
       .single()
 
@@ -595,7 +595,7 @@ export async function ensureUserProfile(userId: string, email: string): Promise<
     // still update last_login_at for analytics
     await supabaseAdmin
       .from('users')
-      .update({ last_login_at: now } as never)
+      .update({ last_login_at: now })
       .eq('id', userId)
     return { ...existing, last_login_at: now }
   }
@@ -605,7 +605,7 @@ export async function ensureUserProfile(userId: string, email: string): Promise<
     .update({
       email,
       last_login_at: now
-    } as never)
+    })
     .eq('id', userId)
     .select()
     .single()
@@ -637,7 +637,7 @@ export async function adjustUserCredits(params: AdjustUserCreditsParams): Promis
     p_description: description ?? null,
     p_stripe_payment_id: stripePaymentId ?? null,
     p_metadata: metadata ?? null
-  } as never)
+  })
 
   if (error) {
     console.error('adjust_user_credits error:', error)
@@ -662,7 +662,7 @@ export async function getUserCreditBalance(userId: string): Promise<number> {
     throw error
   }
 
-  return (data as { credits_balance: number }).credits_balance ?? 0
+  return data.credits_balance ?? 0
 }
 
 export interface CreditTransactionsQuery {
@@ -699,7 +699,7 @@ export async function getCreditTransactions(userId: string, params: CreditTransa
   const items = data ?? []
   const hasMore = items.length > limit
   const trimmed = hasMore ? items.slice(0, limit) : items
-  const nextCursor = hasMore ? (trimmed[trimmed.length - 1] as { created_at: string }).created_at : null
+  const nextCursor = hasMore ? trimmed[trimmed.length - 1].created_at : null
 
   return { items: trimmed, nextCursor }
 }
@@ -720,7 +720,7 @@ export async function awardTrialCreditsIfNeeded(userId: string, email: string, a
 
   const { data, error } = await supabaseAdmin
     .from('users')
-    .update({ trial_credits_given: true } as never)
+    .update({ trial_credits_given: true })
     .eq('id', userId)
     .select()
     .single()
@@ -758,7 +758,7 @@ export async function recordGeneratedContent(params: RecordGeneratedContentParam
     retryCount = 0
   } = params
 
-  const { data, error} = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('generated_content')
     .insert({
       user_id: userId,
@@ -770,7 +770,7 @@ export async function recordGeneratedContent(params: RecordGeneratedContentParam
       settings: settings ?? null,
       status,
       retry_count: retryCount
-    } as never)
+    })
     .select()
     .single()
 
@@ -818,7 +818,7 @@ export async function listGeneratedContent(userId: string, params: GeneratedCont
   const items = data ?? []
   const hasMore = items.length > limit
   const trimmed = hasMore ? items.slice(0, limit) : items
-  const nextCursor = hasMore ? (trimmed[trimmed.length - 1] as { created_at: string }).created_at : null
+  const nextCursor = hasMore ? trimmed[trimmed.length - 1].created_at : null
 
   return { items: trimmed, nextCursor }
 }
@@ -845,7 +845,7 @@ export async function getGeneratedContentById(userId: string, contentId: string)
 export async function softDeleteGeneratedContent(userId: string, contentId: string): Promise<void> {
   const { error } = await supabaseAdmin
     .from('generated_content')
-    .update({ deleted_at: new Date().toISOString() } as never)
+    .update({ deleted_at: new Date().toISOString() })
     .eq('user_id', userId)
     .eq('id', contentId)
 
@@ -871,7 +871,7 @@ export async function updateGeneratedContentRecord(
 
   const { data, error } = await supabaseAdmin
     .from('generated_content')
-    .update(payload as never)
+    .update(payload)
     .eq('user_id', userId)
     .eq('id', contentId)
     .select()
@@ -926,7 +926,7 @@ export async function createPurchaseRecord(params: CreatePurchaseParams): Promis
       credits_purchased: creditsPurchased,
       status: 'pending',
       metadata: metadata ?? null
-    } as never)
+    })
     .select()
     .single()
 
@@ -941,7 +941,7 @@ export async function createPurchaseRecord(params: CreatePurchaseParams): Promis
 export async function updatePurchaseById(purchaseId: string, updates: Partial<Database['public']['Tables']['purchases']['Update']>): Promise<PurchaseRecord> {
   const { data, error } = await supabaseAdmin
     .from('purchases')
-    .update({ ...updates, updated_at: new Date().toISOString() } as never)
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', purchaseId)
     .select()
     .single()
@@ -1037,7 +1037,7 @@ export async function getPurchaseHistory(userId: string, params: PurchaseHistory
   const items = data ?? []
   const hasMore = items.length > limit
   const trimmed = hasMore ? items.slice(0, limit) : items
-  const nextCursor = hasMore ? (trimmed[trimmed.length - 1] as { created_at: string }).created_at : null
+  const nextCursor = hasMore ? trimmed[trimmed.length - 1].created_at : null
 
   return { items: trimmed, nextCursor }
 }
@@ -1045,7 +1045,7 @@ export async function getPurchaseHistory(userId: string, params: PurchaseHistory
 export async function setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<UserRecord> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .update({ stripe_customer_id: stripeCustomerId } as never)
+    .update({ stripe_customer_id: stripeCustomerId })
     .eq('id', userId)
     .select()
     .maybeSingle()
@@ -1069,7 +1069,7 @@ export async function logUsage(userId: string, action: string, creditsUsed: numb
       user_id: userId,
       action,
       credits_used: creditsUsed
-    } as never)
+    })
 
   if (error) {
     console.error('Error logging usage:', error)

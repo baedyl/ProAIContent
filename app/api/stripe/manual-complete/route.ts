@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
+import type { Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import {
   adjustUserCredits,
@@ -26,7 +27,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const session = await getServerSession(authOptions)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = await getServerSession(authOptions as any) as Session | null
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -70,6 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Add credits to user account
   const metadata = purchase.metadata as Record<string, unknown> | undefined
+  const packageId = metadata?.packageId
   const transaction = await adjustUserCredits({
       userId: purchase.user_id,
       amount: purchase.credits_purchased,
@@ -77,16 +80,19 @@ export async function POST(request: NextRequest) {
       description: `${purchase.credits_purchased.toLocaleString()} credit purchase (manual completion)`,
       metadata: {
         checkoutSessionId: sessionId,
-      packageId: metadata?.packageId ?? null,
+        packageId: typeof packageId === 'string' ? packageId : null,
         manualCompletion: true,
       },
     })
 
     // Update purchase status
+    const existingMetadata = (purchase.metadata && typeof purchase.metadata === 'object' && !Array.isArray(purchase.metadata))
+      ? purchase.metadata as Record<string, unknown>
+      : {}
     await updatePurchaseById(purchase.id, {
       status: 'paid',
       metadata: {
-        ...(purchase.metadata ?? {}),
+        ...existingMetadata,
         transactionId: transaction.id,
         manualCompletion: true,
         completedAt: new Date().toISOString(),

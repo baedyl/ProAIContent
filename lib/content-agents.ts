@@ -113,7 +113,7 @@ export class SERPAnalysisAgent {
           title: result.title || '',
           link: result.link || '',
           snippet: result.snippet || '',
-          wordCount: this.estimateWordCount(result.snippet)
+          wordCount: this.estimateWordCount(result.snippet || '')
         }))
 
       // Extract People Also Ask
@@ -333,7 +333,8 @@ export class CompetitorHeadersAgent {
             '#content'
           ]
 
-          let $content = $('body')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let $content: any = $('body')
           for (const selector of contentSelectors) {
             const $found = $(selector)
             if ($found.length > 0) {
@@ -343,7 +344,8 @@ export class CompetitorHeadersAgent {
           }
 
           // Extract headers
-          $content.find('h1, h2, h3, h4').each((_, element) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          $content.find('h1, h2, h3, h4').each((_: any, element: any) => {
             const $el = $(element)
             const text = $el.text().trim()
             const level = element.tagName.toLowerCase()
@@ -480,6 +482,7 @@ export class FAQGenerationAgent {
       const selectedQuestions = paaQuestions.slice(0, 7)
 
       // Generate answers using AI
+      const modelName = process.env.OPENAI_MODEL || 'gpt-4-turbo-preview'
       const prompt = `You are an expert writer creating FAQ answers for an article about "${topic}".
 
 Generate comprehensive, helpful answers for these questions. Each answer should:
@@ -958,7 +961,8 @@ export class ContentOrchestrator {
       headersExtractionTime: 0,
       faqGenerationTime: 0,
       contentGenerationTime: 0,
-      totalTime: 0
+      totalTime: 0,
+      contentIterations: 0
     }
 
     let serpData: SERPAnalysisData | undefined

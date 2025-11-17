@@ -248,7 +248,7 @@ export default function ContentsManager() {
             const count =
               tab.id === 'all'
                 ? filteredContents.length
-                : filteredContents.filter((item) => item.content_type === tab.id).length
+                : filteredContents.filter((item) => item.settings?.contentType === tab.id).length
 
             return (
               <button
@@ -354,7 +354,6 @@ export default function ContentsManager() {
                   <th className="px-6 py-3 font-semibold">Project</th>
                   <th className="px-6 py-3 font-semibold">Type</th>
                   <th className="px-6 py-3 font-semibold">Status</th>
-                  <th className="px-6 py-3 font-semibold">Published?</th>
                   <th className="px-6 py-3 font-semibold">Last update</th>
                   <th className="px-6 py-3 font-semibold">Actions</th>
                 </tr>
@@ -388,9 +387,6 @@ export default function ContentsManager() {
                         >
                           {statusLabel}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-500">
-                        {item.is_published ? 'Yes' : 'No'}
                       </td>
                       <td className="px-6 py-4 text-slate-400">
                         {new Date(item.updated_at).toLocaleString()}

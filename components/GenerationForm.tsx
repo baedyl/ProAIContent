@@ -107,34 +107,39 @@ export default function GenerationForm({ onGenerate, isGenerating }: GenerationF
     
     if (useRange) {
       // Validate range
+      const minWords = formData.minWords ?? MIN_WORD_COUNT
+      const maxWords = formData.maxWords ?? MAX_WORD_COUNT
+      
       if (
-        formData.minWords < MIN_WORD_COUNT ||
-        formData.maxWords > MAX_WORD_COUNT ||
-        Number.isNaN(formData.minWords) ||
-        Number.isNaN(formData.maxWords)
+        minWords < MIN_WORD_COUNT ||
+        maxWords > MAX_WORD_COUNT ||
+        Number.isNaN(minWords) ||
+        Number.isNaN(maxWords)
       ) {
         toast.error(
           `Word count range must be between ${MIN_WORD_COUNT.toLocaleString()} and ${MAX_WORD_COUNT.toLocaleString()} words`
         )
         return
       }
-      if (formData.minWords >= formData.maxWords) {
+      if (minWords >= maxWords) {
         toast.error('Minimum words must be less than maximum words')
         return
       }
       // Send range to API
       onGenerate({
         ...formData,
-        minWords: formData.minWords,
-        maxWords: formData.maxWords,
+        minWords,
+        maxWords,
         wordCount: undefined, // Don't send wordCount when using range
       })
     } else {
       // Validate single value
+      const wordCount = formData.wordCount ?? 800
+      
       if (
-        formData.wordCount < MIN_WORD_COUNT ||
-        formData.wordCount > MAX_WORD_COUNT ||
-        Number.isNaN(formData.wordCount)
+        wordCount < MIN_WORD_COUNT ||
+        wordCount > MAX_WORD_COUNT ||
+        Number.isNaN(wordCount)
       ) {
         toast.error(
           `Word count must be between ${MIN_WORD_COUNT.toLocaleString()} and ${MAX_WORD_COUNT.toLocaleString()} words`
@@ -144,7 +149,7 @@ export default function GenerationForm({ onGenerate, isGenerating }: GenerationF
       // Send single value to API
       onGenerate({
         ...formData,
-        wordCount: formData.wordCount,
+        wordCount,
         minWords: undefined,
         maxWords: undefined,
       })
@@ -312,7 +317,7 @@ export default function GenerationForm({ onGenerate, isGenerating }: GenerationF
             {useRange ? (
               <>
                 Estimated credits: <span className="font-semibold text-indigo-600">
-                  {formData.minWords.toLocaleString()} - {formData.maxWords.toLocaleString()}
+                  {(formData.minWords ?? 0).toLocaleString()} - {(formData.maxWords ?? 0).toLocaleString()}
                 </span> (AI will generate within this range)
               </>
             ) : (
@@ -572,9 +577,9 @@ export default function GenerationForm({ onGenerate, isGenerating }: GenerationF
       {/* Credits Info */}
       <p className="text-center text-xs text-slate-500">
         {useRange ? (
-          <>Estimated usage: {formData.minWords.toLocaleString()} - {formData.maxWords.toLocaleString()} credits per generation</>
+          <>Estimated usage: {(formData.minWords ?? 0).toLocaleString()} - {(formData.maxWords ?? 0).toLocaleString()} credits per generation</>
         ) : (
-          <>Estimated usage: {Math.max(formData.wordCount || 0, 0).toLocaleString()} credits per generation</>
+          <>Estimated usage: {Math.max(formData.wordCount ?? 0, 0).toLocaleString()} credits per generation</>
         )}
       </p>
     </motion.form>

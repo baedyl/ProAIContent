@@ -8,6 +8,18 @@ import GenerationForm, { GenerationFormData } from './GenerationForm'
 import ContentPreview from './ContentPreview'
 import SEOScoreCard from './SEOScoreCard'
 
+interface SEOScoreBreakdown {
+  score: number
+  max: number
+  feedback: string
+}
+
+interface SEOScoreData {
+  score: number
+  breakdown: Record<string, SEOScoreBreakdown>
+  suggestions: string[]
+}
+
 interface ContentGeneratorProps {
   contentType: string
   onBack: () => void
@@ -17,7 +29,7 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
   const [generatedContent, setGeneratedContent] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [seoScore, setSeoScore] = useState<Record<string, unknown> | null>(null)
+  const [seoScore, setSeoScore] = useState<SEOScoreData | null>(null)
 
   const contentTypeTitles: Record<string, string> = {
     blog: 'Blog Post Generator',
@@ -56,7 +68,15 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
 
       const data = await response.json()
       setGeneratedContent(data.content)
-      setSeoScore(data.seoScore || null)
+      
+      // Type guard for SEO score
+      const rawScore = data.seoScore
+      if (rawScore && typeof rawScore === 'object' && 'score' in rawScore && 'breakdown' in rawScore && 'suggestions' in rawScore) {
+        setSeoScore(rawScore as SEOScoreData)
+      } else {
+        setSeoScore(null)
+      }
+      
       setShowPreview(true)
 
       toast.success(

@@ -59,11 +59,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     },
   })
 
+  const existingMetadata = (purchase.metadata && typeof purchase.metadata === 'object' && !Array.isArray(purchase.metadata))
+    ? purchase.metadata as Record<string, unknown>
+    : {}
   await updatePurchaseById(purchase.id, {
     status: 'paid',
     stripe_payment_id: paymentIntentId ?? null,
     metadata: {
-      ...(purchase.metadata ?? {}),
+      ...existingMetadata,
       transactionId: transaction.id,
       checkoutSessionId: session.id,
       packageId: session.metadata?.packageId ?? resolvePackageId(purchase.metadata as PurchaseMetadata | undefined),
@@ -90,10 +93,13 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
     return
   }
 
+  const existingMetadata = (purchase.metadata && typeof purchase.metadata === 'object' && !Array.isArray(purchase.metadata))
+    ? purchase.metadata as Record<string, unknown>
+    : {}
   await updatePurchaseById(purchase.id, {
     status: 'failed',
     metadata: {
-      ...(purchase.metadata ?? {}),
+      ...existingMetadata,
       failureReason: paymentIntent.last_payment_error?.message ?? 'unknown_error',
     },
   })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
+import type { Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin, logUsage } from '@/lib/supabase'
 
@@ -16,7 +17,8 @@ function createSlug(value: string) {
  */
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = await getServerSession(authOptions as any) as Session | null
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -50,7 +52,8 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = await getServerSession(authOptions as any) as Session | null
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -70,16 +73,18 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from('projects')
-      .insert({
-        user_id: session.user.id,
-        name,
-        slug,
-        site_url: body.siteUrl || null,
-        persona: body.persona || null,
-        status: body.status || 'active',
-        brief: body.brief || null,
-        metadata: body.metadata || {},
-      })
+      .insert(
+        {
+          user_id: session.user.id,
+          name,
+          slug,
+          site_url: body.siteUrl || null,
+          persona: body.persona || null,
+          status: body.status || 'active',
+          brief: body.brief || null,
+          metadata: body.metadata || {},
+        } as never
+      )
       .select()
       .single()
 

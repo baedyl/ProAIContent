@@ -60,6 +60,11 @@ interface QuickLink {
   href?: string
 }
 
+interface DashboardProps {
+  onContentTypeSelect: (type: string) => void
+  onSectionChange?: (section: 'projects' | 'personas' | 'contents') => void
+}
+
 export default function Dashboard({ onContentTypeSelect, onSectionChange }: DashboardProps) {
   const quickLinks: QuickLink[] = [
     {

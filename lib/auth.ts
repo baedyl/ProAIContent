@@ -3,7 +3,8 @@
  * Handles authentication with Supabase
  */
 
-import { NextAuthOptions, Session } from 'next-auth'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Session } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import {
@@ -18,7 +19,7 @@ type SessionUserWithCredits = Session['user'] & {
   creditsBalance?: number | null
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   providers: [
     // Email & Password Authentication
     CredentialsProvider({
@@ -81,26 +82,28 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }: { token: any; user: any; account: any }) {
       try {
         if (user) {
           let supabaseUserId = user.id as string | undefined
 
           if (account?.provider === 'google' && user.email) {
-            const { data: existingUser, error } = await supabaseAdmin.auth.admin.getUserByEmail(user.email)
+            const { data: existingUsers, error } = await supabaseAdmin.auth.admin.listUsers()
             if (error) {
               console.error('Error fetching Supabase user for Google sign-in:', error)
             }
-            if (existingUser?.user) {
-              supabaseUserId = existingUser.user.id
-              token.email = existingUser.user.email
+            const existingUser = existingUsers?.users?.find((u) => u.email === user.email)
+            if (existingUser) {
+              supabaseUserId = existingUser.id
+              token.email = existingUser.email
             }
           }
 
           if (!supabaseUserId && user.email) {
-            const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(user.email)
-            if (existingUser?.user) {
-              supabaseUserId = existingUser.user.id
+            const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+            const existingUser = existingUsers?.users?.find((u) => u.email === user.email)
+            if (existingUser) {
+              supabaseUserId = existingUser.id
             }
           }
 
@@ -133,7 +136,7 @@ export const authOptions: NextAuthOptions = {
       return token
     },
 
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any }) {
       if (token && session.user) {
         const sessionUser = session.user as SessionUserWithCredits
 
@@ -153,14 +156,15 @@ export const authOptions: NextAuthOptions = {
       return session
     },
 
-    async signIn({ user, account }) {
+    async signIn({ user, account }: { user: any; account: any }) {
       // Handle OAuth sign-ins (Google, etc.)
       if (account?.provider === 'google' && user.email) {
         try {
-          // Check if user exists in Supabase
-          const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(user.email)
+          // Check if user exists in Supabase - use listUsers since getUserByEmail doesn't exist
+          const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers()
+          const existingUser = allUsers?.users?.find((u: any) => u.email === user.email)
           
-          if (!existingUser.user) {
+          if (!existingUser) {
             // Create user in Supabase if doesn't exist
             const { data: newUser, error } = await supabaseAdmin.auth.admin.createUser({
               email: user.email,
@@ -195,7 +199,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
     maxAge: 24 * 60 * 60, // 24 hours (1 day)
   },
 
