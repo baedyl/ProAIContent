@@ -371,6 +371,44 @@ export interface Database {
           updated_at?: string
         }
       }
+      personas: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          avatar: string
+          style: string
+          description: string | null
+          is_default: boolean
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          avatar?: string
+          style: string
+          description?: string | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          avatar?: string
+          style?: string
+          description?: string | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+      }
     }
     Views: {
       credit_usage_daily: {
