@@ -77,7 +77,8 @@ export async function PATCH(
 
     // If this is set as default, unset all other defaults first
     if (updates.is_default) {
-      await (supabaseAdmin.from('personas') as any)
+      await supabaseAdmin
+        .from('personas')
         .update({ is_default: false })
         .eq('user_id', session.user.id)
         .neq('id', params.id)
