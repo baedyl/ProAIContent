@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin, type Database } from '@/lib/supabase'
 
 const updatePersonaSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
@@ -79,7 +79,7 @@ export async function PATCH(
     if (updates.is_default) {
       await supabaseAdmin
         .from('personas')
-        .update({ is_default: false })
+        .update({ is_default: false } as Database['public']['Tables']['personas']['Update'])
         .eq('user_id', session.user.id)
         .neq('id', params.id)
     }
