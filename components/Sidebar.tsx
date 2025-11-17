@@ -8,11 +8,8 @@ import {
   FaFolderOpen,
   FaHome,
   FaLink,
-  FaCoins,
   FaRegFileAlt,
-  FaRocket,
   FaRss,
-  FaShoppingBag,
   FaShoppingCart,
   FaUsers,
 } from 'react-icons/fa'

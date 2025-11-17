@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { supabaseAdmin, getUserSettings, createDefaultUserSettings, updateUserSettings } from '@/lib/supabase'
+import { getUserSettings, createDefaultUserSettings, updateUserSettings } from '@/lib/supabase'
 
 /**
  * GET - Fetch user settings
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
@@ -23,10 +23,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ settings })
 
-  } catch (error: any) {
-    console.error('Settings GET error:', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An error occurred while fetching settings'
+    console.error('Settings GET error:', message)
     return NextResponse.json(
-      { error: 'An error occurred while fetching settings' },
+      { error: message },
       { status: 500 }
     )
   }
@@ -43,7 +44,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const updates = await request.json()
+    const updates = (await request.json()) as Record<string, unknown>
 
     // Remove fields that shouldn't be updated
     delete updates.id
@@ -61,10 +62,11 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ settings })
 
-  } catch (error: any) {
-    console.error('Settings PATCH error:', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An error occurred while updating settings'
+    console.error('Settings PATCH error:', message)
     return NextResponse.json(
-      { error: 'An error occurred while updating settings' },
+      { error: message },
       { status: 500 }
     )
   }

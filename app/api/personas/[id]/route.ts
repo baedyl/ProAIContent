@@ -40,7 +40,7 @@ export async function GET(
     }
 
     return NextResponse.json({ persona: data })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Persona GET error:', error)
     return NextResponse.json(
       { error: 'An error occurred while fetching the persona' },
@@ -101,7 +101,7 @@ export async function PATCH(
     }
 
     return NextResponse.json({ persona: data })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Persona PATCH error:', error)
     return NextResponse.json(
       { error: 'An error occurred while updating the persona' },
@@ -136,7 +136,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: 'Persona deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Persona DELETE error:', error)
     return NextResponse.json(
       { error: 'An error occurred while deleting the persona' },

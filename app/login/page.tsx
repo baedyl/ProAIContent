@@ -35,8 +35,9 @@ export default function LoginPage() {
         router.push('/dashboard')
         router.refresh()
       }
-    } catch (error) {
-      toast.error('An error occurred. Please try again.')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An error occurred. Please try again.'
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -46,8 +47,9 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       await signIn('google', { callbackUrl: '/dashboard' })
-    } catch (error) {
-      toast.error('Failed to sign in with Google')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to sign in with Google'
+      toast.error(message)
       setIsLoading(false)
     }
   }
@@ -166,7 +168,7 @@ export default function LoginPage() {
         {/* Sign Up Link */}
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-500">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="font-semibold text-indigo-600 hover:text-indigo-700">
               Sign up for free
             </Link>
@@ -176,7 +178,7 @@ export default function LoginPage() {
         {/* Features */}
         <div className="mt-8 pt-6 border-t border-slate-200">
           <p className="text-xs text-slate-400 text-center mb-3">
-            What you'll get:
+            What you&apos;ll get:
           </p>
           <div className="space-y-2 text-xs text-slate-500">
             <div className="flex items-center gap-2">

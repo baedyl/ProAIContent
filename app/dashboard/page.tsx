@@ -37,6 +37,19 @@ interface GeneratedContentItem {
   created_at: string
 }
 
+type UsageEntry = {
+  usage_day: string
+  credits_spent?: number
+  credits_added?: number
+}
+
+interface TransactionRecord {
+  id: string
+  type: string
+  amount: number
+  created_at: string
+}
+
 const fetcher = async (url: string) => {
   const res = await fetch(url)
   if (!res.ok) {
@@ -98,7 +111,7 @@ export default function DashboardPage() {
 
   const usageChartData = useMemo(() => {
     if (!usageData?.usage) return []
-    return usageData.usage.map((entry: any) => ({
+    return usageData.usage.map((entry: UsageEntry) => ({
       date: format(parseISO(entry.usage_day), 'MMM d'),
       spent: entry.credits_spent ?? 0,
       added: entry.credits_added ?? 0,
@@ -106,7 +119,7 @@ export default function DashboardPage() {
   }, [usageData])
 
   const recentContents: GeneratedContentItem[] = contentsData?.contents ?? []
-  const transactions = transactionsData?.transactions ?? []
+  const transactions: TransactionRecord[] = transactionsData?.transactions ?? []
   const isLoading = balanceLoading || summaryLoading || usageLoading || contentsLoading
   const lowBalance = balance > 0 && balance < 5000
 
@@ -131,8 +144,9 @@ export default function DashboardPage() {
       }
       toast.success('Content deleted')
       mutateContents()
-    } catch (error: any) {
-      toast.error(error?.message || 'Unable to delete content')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to delete content'
+      toast.error(message)
     }
   }
 
@@ -162,8 +176,9 @@ export default function DashboardPage() {
       setSelectedContent(updated.content)
       setEditValue(updated.content.content)
       setIsEditing(false)
-    } catch (error: any) {
-      toast.error(error?.message || 'Unable to save changes')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to save changes'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -370,7 +385,7 @@ export default function DashboardPage() {
               <p className="mt-6 text-sm text-slate-500">Purchases and generation usage will appear here.</p>
             ) : (
               <div className="mt-4 space-y-3">
-                {transactions.map((txn: any) => (
+                {transactions.map((txn: TransactionRecord) => (
                   <div key={txn.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                     <div className="flex items-center justify-between">
                       <div>

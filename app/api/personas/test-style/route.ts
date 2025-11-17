@@ -78,10 +78,11 @@ Important: Only output the sample paragraphs. Do not include any meta-commentary
     }
 
     return NextResponse.json({ sample })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Test style error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while testing the style'
     return NextResponse.json(
-      { error: error?.message || 'An error occurred while testing the style' },
+      { error: message },
       { status: 500 }
     )
   }

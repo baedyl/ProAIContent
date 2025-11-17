@@ -80,8 +80,9 @@ export default function RegisterPage() {
         // If auto sign-in fails, redirect to login
         router.push('/login')
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to create account'
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }

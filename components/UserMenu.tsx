@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FaUser, FaCog, FaSignOutAlt, FaChartLine, FaFolder } from 'react-icons/fa'
+import { FaCog, FaSignOutAlt, FaChartLine, FaFolder } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function UserMenu() {

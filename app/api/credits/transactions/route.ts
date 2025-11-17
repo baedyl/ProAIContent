@@ -41,10 +41,11 @@ export async function GET(request: NextRequest) {
       nextCursor: result.nextCursor,
       limit,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Credits transactions error:', error)
+    const message = error instanceof Error ? error.message : 'Unable to fetch credit transactions'
     return NextResponse.json(
-      { error: error?.message || 'Unable to fetch credit transactions' },
+      { error: message },
       { status: 500 }
     )
   }

@@ -13,7 +13,7 @@ interface Project {
   persona: string | null
   status: string | null
   brief: string | null
-  metadata: any
+  metadata: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
@@ -30,7 +30,7 @@ interface ContentItem {
   settings: {
     contentType?: string
     keywords?: string
-    [key: string]: any
+    [key: string]: string | undefined
   }
   status: string
   retry_count: number
@@ -151,8 +151,9 @@ export default function ContentsManager() {
       setContents(prev => prev.map(c => c.id === content.id ? data.content : c))
       setEditingContent(null)
       toast.success('Content updated successfully')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update content')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update content'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -173,8 +174,9 @@ export default function ContentsManager() {
       setContents(prev => prev.filter(c => c.id !== content.id))
       setDeletingContent(null)
       toast.success('Content deleted successfully')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete content')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete content'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -198,8 +200,9 @@ export default function ContentsManager() {
       setContents(prev => prev.map(c => c.id === content.id ? data.content : c))
       setAssigningContent(null)
       toast.success(projectId ? 'Content assigned to project' : 'Content removed from project')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update content')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update content'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -634,7 +637,7 @@ export default function ContentsManager() {
               </div>
               <div className="p-6 space-y-4">
                 <p className="text-slate-600">
-                  Are you sure you want to delete <strong>"{deletingContent.title}"</strong>? This action cannot be undone.
+                  Are you sure you want to delete <strong>&quot;{deletingContent.title}&quot;</strong>? This action cannot be undone.
                 </p>
                 <div className="flex items-center justify-end gap-3 pt-4">
                   <button

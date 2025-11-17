@@ -11,7 +11,6 @@ import {
   FaTimes,
   FaHome,
   FaMagic,
-  FaFileAlt,
   FaShoppingCart,
   FaUser,
   FaCog,

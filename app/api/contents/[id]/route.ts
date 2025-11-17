@@ -38,13 +38,21 @@ export async function GET(
     }
 
     return NextResponse.json({ content })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Content GET error:', error)
     return NextResponse.json(
       { error: 'An error occurred while fetching the content item' },
       { status: 500 }
     )
   }
+}
+
+interface ContentUpdateBody {
+  title?: unknown
+  content?: unknown
+  requested_length?: unknown
+  settings?: unknown
+  project_id?: unknown
 }
 
 /**
@@ -61,11 +69,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = (await request.json()) as ContentUpdateBody
 
-    const payload: Record<string, any> = {}
+    const payload: Record<string, unknown> = {}
 
-    if (typeof body.title === 'string') {
+    if (typeof body.title === 'string' && body.title.trim().length > 0) {
       payload.title = body.title.trim()
     }
 
@@ -78,13 +86,12 @@ export async function PATCH(
       payload.requested_length = Math.max(body.requested_length, MIN_WORD_COUNT)
     }
 
-    if (body.settings) {
+    if (body.settings && typeof body.settings === 'object') {
       payload.settings = body.settings
     }
 
     // Support assigning/removing from project
     if (body.project_id !== undefined) {
-      // null or empty string removes from project, otherwise assigns to project
       payload.project_id = body.project_id || null
     }
 
@@ -98,7 +105,7 @@ export async function PATCH(
     const updated = await updateGeneratedContentRecord(session.user.id, params.id, payload)
 
     return NextResponse.json({ content: updated })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Content PATCH error:', error)
     return NextResponse.json(
       { error: 'An error occurred while updating the content item' },
@@ -124,7 +131,7 @@ export async function DELETE(
     await softDeleteGeneratedContent(session.user.id, params.id)
 
     return NextResponse.json({ message: 'Content deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Content DELETE error:', error)
     return NextResponse.json(
       { error: 'An error occurred while deleting the content item' },

@@ -204,12 +204,13 @@ export async function POST(request: NextRequest) {
     let orchestratorResult
     try {
       orchestratorResult = await orchestrator.generateContent(contentRequest)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Orchestrator error:', error)
+      const details = error instanceof Error ? error.message : 'No additional details available'
       return NextResponse.json(
         {
           error: 'Content generation failed. Please try again.',
-          details: error?.message ?? 'No additional details available',
+          details,
         },
         { status: 500 }
       )
@@ -327,7 +328,7 @@ ${video}
         settings: JSON.parse(
           JSON.stringify(
             Object.fromEntries(
-              Object.entries(settingsPayload).filter(([_, v]) => v !== undefined)
+              Object.entries(settingsPayload).filter(([, v]) => v !== undefined)
             )
           )
         ),
@@ -397,10 +398,11 @@ ${video}
         { status: 500 }
       )
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Generation error:', error)
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred while generating content.'
     return NextResponse.json(
-      { error: error?.message || 'An unexpected error occurred while generating content.' },
+      { error: message },
       { status: 500 }
     )
   }

@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     const hasUpperCase = /[A-Z]/.test(password)
     const hasLowerCase = /[a-z]/.test(password)
     const hasNumber = /[0-9]/.test(password)
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
 
     if (!hasUpperCase || !hasLowerCase || !hasNumber) {
       return NextResponse.json(
@@ -74,10 +73,11 @@ export async function POST(request: NextRequest) {
       }
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Signup error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred during signup'
     return NextResponse.json(
-      { error: error.message || 'An error occurred during signup' },
+      { error: message },
       { status: 500 }
     )
   }

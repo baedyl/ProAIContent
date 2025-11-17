@@ -89,8 +89,9 @@ export default function PersonasManager() {
       if (!response.ok) throw new Error('Failed to fetch personas')
       const data = await response.json()
       setPersonas(data.personas || [])
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load personas')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to load personas'
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -147,8 +148,9 @@ export default function PersonasManager() {
       toast.success(editingPersona ? 'Persona updated' : 'Persona created')
       setIsModalOpen(false)
       fetchPersonas()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save persona')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to save persona'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -169,8 +171,9 @@ export default function PersonasManager() {
       toast.success('Persona deleted')
       setDeletingPersona(null)
       fetchPersonas()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete persona')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete persona'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -201,8 +204,9 @@ export default function PersonasManager() {
 
       const data = await response.json()
       setTestResult(data.sample)
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to test style')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to test style'
+      toast.error(message)
     } finally {
       setTestingStyle(false)
     }
@@ -256,8 +260,9 @@ export default function PersonasManager() {
         style: data.enrichedStyle,
       }))
       toast.success('Writing style enriched!')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to enrich style')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to enrich style'
+      toast.error(message)
     } finally {
       setIsSaving(false)
     }
@@ -508,7 +513,7 @@ export default function PersonasManager() {
                         <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{testResult}</div>
                       ) : (
                         <p className="text-sm text-slate-400 italic">
-                          Click "Test Writing Style" to generate 2-3 sample paragraphs showing how this persona would write
+                          Click &quot;Test Writing Style&quot; to generate 2-3 sample paragraphs showing how this persona would write
                         </p>
                       )}
                     </div>
@@ -577,7 +582,7 @@ export default function PersonasManager() {
               </div>
               <div className="p-6 space-y-4">
                 <p className="text-slate-600">
-                  Are you sure you want to delete <strong>"{deletingPersona.name}"</strong>? This action cannot be undone.
+                  Are you sure you want to delete <strong>&quot;{deletingPersona.name}&quot;</strong>? This action cannot be undone.
                 </p>
                 <div className="flex items-center justify-end gap-3 pt-4">
                   <button

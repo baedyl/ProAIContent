@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { CREDIT_PACKAGES } from '@/lib/stripe'
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     packages: CREDIT_PACKAGES.map(pkg => ({
       id: pkg.id,

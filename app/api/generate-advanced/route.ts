@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-import { getPersona, buildPersonaPrompt } from '@/lib/personas'
 import { searchYouTubeVideo } from '@/lib/serp-analysis'
 import { 
   ContentOrchestrator,
   type ContentGenerationRequest,
 } from '@/lib/content-agents'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-})
+function hasStatusCode(error: unknown): error is { status: number } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    typeof (error as { status: unknown }).status === 'number'
+  )
+}
 
 interface AdvancedGenerateRequest {
   contentType: string
@@ -143,25 +146,26 @@ export async function POST(request: NextRequest) {
       }
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Generation error:', error)
     
-    if (error.status === 401) {
+    if (hasStatusCode(error) && error.status === 401) {
       return NextResponse.json(
         { error: 'Invalid OpenAI API key. Please check your configuration.' },
         { status: 401 }
       )
     }
     
-    if (error.status === 429) {
+    if (hasStatusCode(error) && error.status === 429) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
         { status: 429 }
       )
     }
 
+    const message = error instanceof Error ? error.message : 'An error occurred while generating content'
     return NextResponse.json(
-      { error: error.message || 'An error occurred while generating content' },
+      { error: message },
       { status: 500 }
     )
   }

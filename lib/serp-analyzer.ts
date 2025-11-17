@@ -45,6 +45,25 @@ export interface SEOMetrics {
   keywordInFirstParagraph: boolean
 }
 
+export interface PageAnalysis {
+  url: string
+  title: string
+  description: string
+  keywords: string[]
+  headings: {
+    h1: string[]
+    h2: string[]
+    h3: string[]
+  }
+  wordCount: number
+  paragraphCount: number
+  listCount: number
+  imageCount: number
+  linkCount: number
+  hasSchema: boolean
+  hasFAQ: boolean
+}
+
 export interface SERPAnalysisResult {
   query: string
   topResults: SERPResult[]
@@ -80,7 +99,7 @@ export async function analyzeSERP(query: string, location: string = 'us'): Promi
     })
 
     const organicResults = response.data.organic_results || []
-    const topResults: SERPResult[] = organicResults.slice(0, 10).map((result: any, index: number) => ({
+    const topResults: SERPResult[] = organicResults.slice(0, 10).map((result: { link?: string; title?: string; snippet?: string }, index: number) => ({
       url: result.link,
       title: result.title,
       description: result.snippet || '',
@@ -106,8 +125,9 @@ export async function analyzeSERP(query: string, location: string = 'us'): Promi
       seoPatterns,
       recommendations,
     }
-  } catch (error: any) {
-    console.error('SERP analysis error:', error.message)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'SERP analysis failed'
+    console.error('SERP analysis error:', message)
     return generateMockSERPAnalysis(query)
   }
 }
@@ -115,7 +135,7 @@ export async function analyzeSERP(query: string, location: string = 'us'): Promi
 /**
  * Analyze individual page content
  */
-async function analyzePageContent(url: string): Promise<any> {
+async function analyzePageContent(url: string): Promise<PageAnalysis | null> {
   try {
     const response = await axios.get(url, {
       timeout: 8000,
@@ -168,7 +188,7 @@ async function analyzePageContent(url: string): Promise<any> {
       linkCount,
       hasSchema,
       hasFAQ,
-    }
+    } as PageAnalysis
   } catch (error) {
     console.error(`Error analyzing ${url}:`, error)
     return null
@@ -217,7 +237,7 @@ function extractKeywordsFromText(text: string): string[] {
 /**
  * Aggregate keywords from multiple pages
  */
-function aggregateKeywords(analyses: any[], query: string): KeywordAnalysis {
+function aggregateKeywords(analyses: Array<PageAnalysis | null>, query: string): KeywordAnalysis {
   const allKeywords: string[] = []
   const keywordFrequency: Record<string, number> = {}
 
@@ -304,8 +324,8 @@ function generateSynonyms(keywords: string[]): string[] {
 /**
  * Analyze common content structures
  */
-function analyzeCommonStructures(analyses: any[]): ContentStructure {
-  const validAnalyses = analyses.filter(a => a !== null)
+function analyzeCommonStructures(analyses: Array<PageAnalysis | null>): ContentStructure {
+  const validAnalyses = analyses.filter((a): a is PageAnalysis => a !== null)
 
   const avgWordCount = Math.round(
     validAnalyses.reduce((sum, a) => sum + (a.wordCount || 0), 0) / validAnalyses.length
@@ -349,8 +369,8 @@ function analyzeCommonStructures(analyses: any[]): ContentStructure {
 /**
  * Extract SEO patterns from top pages
  */
-function extractSEOPatterns(analyses: any[]): SEOMetrics {
-  const validAnalyses = analyses.filter(a => a !== null)
+function extractSEOPatterns(analyses: Array<PageAnalysis | null>): SEOMetrics {
+  const validAnalyses = analyses.filter((a): a is PageAnalysis => a !== null)
 
   const avgTitleLength = Math.round(
     validAnalyses.reduce((sum, a) => sum + (a.title?.length || 0), 0) / validAnalyses.length

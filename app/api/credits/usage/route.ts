@@ -34,10 +34,11 @@ export async function GET(request: NextRequest) {
       usage: data,
       days: parsed.data.days,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Credits usage error:', error)
+    const message = error instanceof Error ? error.message : 'Unable to fetch credit usage chart data'
     return NextResponse.json(
-      { error: error?.message || 'Unable to fetch credit usage chart data' },
+      { error: message },
       { status: 500 }
     )
   }

@@ -80,10 +80,11 @@ Generate an enriched version that is 2-3x more detailed and specific. Focus on m
     }
 
     return NextResponse.json({ enrichedStyle })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Enrich style error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while enriching the style'
     return NextResponse.json(
-      { error: error?.message || 'An error occurred while enriching the style' },
+      { error: message },
       { status: 500 }
     )
   }
