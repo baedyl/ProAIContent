@@ -7,12 +7,14 @@ import { createClient } from '@supabase/supabase-js'
 import type { PostgrestError } from '@supabase/supabase-js'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-// Supabase configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Supabase configuration with build-time safety
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+// Warn if running in production without proper config
+if (process.env.NODE_ENV === 'production' && supabaseUrl === 'https://placeholder.supabase.co') {
+  console.warn('⚠️  WARNING: Supabase environment variables not set! Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
 }
 
 /**
@@ -28,7 +30,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
  */
 export const supabaseAdmin = createClient<Database>(
   supabaseUrl,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey,
+  supabaseServiceKey,
   {
     auth: {
       autoRefreshToken: false,

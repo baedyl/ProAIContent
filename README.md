@@ -2,6 +2,14 @@
 
 Create production-ready, humanized content with precise word-count enforcement, real-time credit management, and Stripe-backed billing. This repository upgrades the original proof-of-concept into a full MVP with hardened APIs, transactional persistence, and a dashboard that keeps creators on budget.
 
+## 🚀 Quick Deploy to Render
+
+**Having build issues?** See [RENDER_SETUP.md](./RENDER_SETUP.md) for a step-by-step fix guide.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com)
+
+**Important:** After deployment, you MUST configure environment variables in Render dashboard. See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete instructions.
+
 ## Feature Highlights
 - Trial onboarding awards 10 000 credits automatically and tracks balances in Supabase.
 - Credit transactions, generation history, and purchases are auditable through dedicated tables and APIs.
