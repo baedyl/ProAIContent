@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import useSWR from 'swr'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FiCheckCircle, FiShoppingCart } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { format, parseISO } from 'date-fns'
@@ -34,10 +35,20 @@ interface PurchaseRecord {
 }
 
 export default function BuyCreditsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
+  const [isConfirming, setIsConfirming] = useState(false)
   const { data: packagesData, isLoading: packagesLoading } = useSWR('/api/credits/packages', fetcher)
-  const { data: balanceData } = useSWR('/api/credits/balance', fetcher)
-  const { data: purchasesData, isLoading: purchasesLoading } = useSWR('/api/purchases?limit=10', fetcher)
+  const {
+    data: balanceData,
+    mutate: mutateBalance,
+  } = useSWR('/api/credits/balance', fetcher)
+  const {
+    data: purchasesData,
+    isLoading: purchasesLoading,
+    mutate: mutatePurchases,
+  } = useSWR('/api/purchases?limit=10', fetcher)
 
   const packages: CreditPackage[] = packagesData?.packages ?? []
   const balance = balanceData?.balance ?? 0
@@ -71,10 +82,50 @@ export default function BuyCreditsPage() {
     }
   }
 
+  const confirmPurchase = useCallback(
+    async (sessionId: string) => {
+      setIsConfirming(true)
+      try {
+        const res = await fetch('/api/stripe/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        })
+
+        const payload = await res.json()
+
+        if (!res.ok) {
+          throw new Error(payload.error || 'Failed to confirm payment')
+        }
+
+        toast.success(payload.message || 'Credits added to your account')
+        await Promise.all([mutateBalance(), mutatePurchases()])
+      } catch (error: unknown) {
+        toast.error((error as Error)?.message || 'Unable to confirm purchase')
+      } finally {
+        setIsConfirming(false)
+        router.replace('/buy-credits')
+      }
+    },
+    [mutateBalance, mutatePurchases, router]
+  )
+
+  useEffect(() => {
+    const checkoutStatus = searchParams.get('checkout')
+    const checkoutSessionId = searchParams.get('session_id')
+
+    if (checkoutStatus === 'success' && checkoutSessionId && !isConfirming) {
+      confirmPurchase(checkoutSessionId)
+    } else if (checkoutStatus === 'cancel') {
+      toast.error('Checkout was cancelled')
+      router.replace('/buy-credits')
+    }
+  }, [searchParams, confirmPurchase, isConfirming, router])
+
   return (
     <div className="px-4 py-6 lg:px-8 relative">
       {/* Loading Overlay */}
-      {isProcessing && (
+      {(isProcessing || isConfirming) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4">
             <div className="flex flex-col items-center gap-4">
@@ -82,8 +133,14 @@ export default function BuyCreditsPage() {
                 <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-slate-900">Processing Payment</h3>
-                <p className="text-sm text-slate-500 mt-2">Redirecting you to secure checkout...</p>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {isConfirming ? 'Finalizing Purchase' : 'Processing Payment'}
+                </h3>
+                <p className="text-sm text-slate-500 mt-2">
+                  {isConfirming
+                    ? 'Applying credits to your account...'
+                    : 'Redirecting you to secure checkout...'}
+                </p>
               </div>
             </div>
           </div>
