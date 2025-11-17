@@ -72,20 +72,22 @@ export async function POST(request: NextRequest) {
     if (data.is_default) {
       await supabaseAdmin
         .from('personas')
-        .update({ is_default: false })
+        .update({ is_default: false } as never)
         .eq('user_id', session.user.id)
     }
 
     const { data: persona, error } = await supabaseAdmin
       .from('personas')
-      .insert({
-        user_id: session.user.id,
-        name: data.name,
-        avatar: data.avatar,
-        style: data.style,
-        description: data.description,
-        is_default: data.is_default,
-      })
+      .insert(
+        {
+          user_id: session.user.id,
+          name: data.name,
+          avatar: data.avatar,
+          style: data.style,
+          description: data.description,
+          is_default: data.is_default,
+        } as never
+      )
       .select()
       .single()
 

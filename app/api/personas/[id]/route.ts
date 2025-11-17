@@ -128,7 +128,7 @@ export async function DELETE(
 
     const { error } = await supabaseAdmin
       .from('personas')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ deleted_at: new Date().toISOString() } as never)
       .eq('id', params.id)
       .eq('user_id', session.user.id)
 

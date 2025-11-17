@@ -84,7 +84,7 @@ export async function PATCH(
 
     const { data, error } = await supabaseAdmin
       .from('projects')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...updates, updated_at: new Date().toISOString() } as never)
       .eq('id', params.id)
       .eq('user_id', session.user.id)
       .select()
