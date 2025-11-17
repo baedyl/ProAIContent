@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { Providers } from './providers'
 import Navbar from '@/components/Navbar'
+import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <Navbar />
+        <GlobalLoadingOverlay />
           <Toaster position="top-right" />
           {children}
         </Providers>
