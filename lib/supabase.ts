@@ -822,11 +822,14 @@ export async function updateGeneratedContentRecord(
   contentId: string,
   updates: Partial<GeneratedContentRecord>
 ): Promise<GeneratedContentRecord> {
-  const payload = { ...updates, updated_at: new Date().toISOString() }
+  const payload = {
+    ...updates,
+    updated_at: new Date().toISOString(),
+  }
 
-  delete (payload as any).id
-  delete (payload as any).user_id
-  delete (payload as any).created_at
+  delete payload.id
+  delete payload.user_id
+  delete payload.created_at
 
   const { data, error } = await supabaseAdmin
     .from('generated_content')

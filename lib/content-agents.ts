@@ -63,9 +63,9 @@ export interface ContentGenerationRequest {
   existingContent?: string
 }
 
-export interface AgentResult {
+export interface AgentResult<T = unknown> {
   success: boolean
-  data?: any
+  data?: T
   error?: string
   executionTime: number
 }
@@ -85,7 +85,7 @@ export class SERPAnalysisAgent {
     this.apiKey = apiKey || process.env.SERPAPI_KEY || ''
   }
 
-  async execute(keyword: string, location: string = 'us'): Promise<AgentResult> {
+  async execute(keyword: string, location: string = 'us'): Promise<AgentResult<SERPAnalysisData>> {
     const startTime = Date.now()
 
     try {
@@ -108,7 +108,7 @@ export class SERPAnalysisAgent {
       // Extract organic results
       const topResults: SERPResult[] = (response.organic_results || [])
         .slice(0, 10)
-        .map((result: any, index: number) => ({
+        .map((result: { title?: string; link?: string; snippet?: string }, index: number) => ({
           position: index + 1,
           title: result.title || '',
           link: result.link || '',
@@ -118,19 +118,19 @@ export class SERPAnalysisAgent {
 
       // Extract People Also Ask
       const peopleAlsoAsk: string[] = (response.related_questions || [])
-        .map((q: any) => q.question)
+        .map((q: { question?: string }) => q.question)
         .filter(Boolean)
         .slice(0, 10)
 
       // Extract Related Searches
       const relatedSearches: string[] = (response.related_searches || [])
-        .map((s: any) => s.query)
+        .map((s: { query?: string }) => s.query)
         .filter(Boolean)
         .slice(0, 8)
 
       // Analyze content patterns
       const avgWordCount = this.calculateAverageWordCount(topResults)
-      const topKeywords = await this.extractTopKeywords(topResults, keyword)
+      const topKeywords = await this.extractTopKeywords(topResults)
       const contentGaps = this.identifyContentGaps(topResults, peopleAlsoAsk)
       const recommendations = this.generateRecommendations(
         topResults,
@@ -161,11 +161,12 @@ export class SERPAnalysisAgent {
         data: analysisData,
         executionTime: Date.now() - startTime
       }
-    } catch (error: any) {
-      console.error('[SERP Agent] Error:', error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'SERP analysis failed'
+      console.error('[SERP Agent] Error:', message)
       return {
         success: false,
-        error: error.message,
+        error: message,
         executionTime: Date.now() - startTime
       }
     }
@@ -188,7 +189,7 @@ export class SERPAnalysisAgent {
     return Math.floor(wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length)
   }
 
-  private async extractTopKeywords(results: SERPResult[], mainKeyword: string): Promise<string[]> {
+  private async extractTopKeywords(results: SERPResult[]): Promise<string[]> {
     // Extract keywords from titles and snippets
     const allText = results
       .map(r => `${r.title} ${r.snippet}`)
@@ -280,7 +281,15 @@ export class SERPAnalysisAgent {
  * Extract and analyze header structures from top-ranking pages
  */
 export class CompetitorHeadersAgent {
-  async execute(urls: string[], maxUrls: number = 5): Promise<AgentResult> {
+  async execute(
+    urls: string[],
+    maxUrls: number = 5
+  ): Promise<AgentResult<{
+    headers: CompetitorHeader[]
+    analysis: ReturnType<CompetitorHeadersAgent['analyzeHeaderPatterns']>
+    totalUrls: number
+    successfulUrls: number
+  }>> {
     const startTime = Date.now()
 
     try {
@@ -355,8 +364,9 @@ export class CompetitorHeadersAgent {
           // Small delay to be respectful
           await new Promise(resolve => setTimeout(resolve, 500))
 
-        } catch (error: any) {
-          console.log(`[Headers Agent] Error fetching ${url}:`, error.message)
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'fetch failed'
+          console.log(`[Headers Agent] Error fetching ${url}:`, message)
           continue
         }
       }
@@ -376,11 +386,12 @@ export class CompetitorHeadersAgent {
         },
         executionTime: Date.now() - startTime
       }
-    } catch (error: any) {
-      console.error('[Headers Agent] Error:', error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'header extraction failed'
+      console.error('[Headers Agent] Error:', message)
       return {
         success: false,
-        error: error.message,
+        error: message,
         executionTime: Date.now() - startTime
       }
     }
@@ -451,7 +462,7 @@ export class FAQGenerationAgent {
     paaQuestions: string[],
     topic: string,
     context: string = ''
-  ): Promise<AgentResult> {
+  ): Promise<AgentResult<{ faqs: FAQ[]; html: string }>> {
     const startTime = Date.now()
 
     try {
@@ -517,11 +528,12 @@ A: [answer]
         data: { faqs, html },
         executionTime: Date.now() - startTime
       }
-    } catch (error: any) {
-      console.error('[FAQ Agent] Error:', error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'FAQ generation failed'
+      console.error('[FAQ Agent] Error:', message)
       return {
         success: false,
-        error: error.message,
+        error: message,
         executionTime: Date.now() - startTime
       }
     }
@@ -644,7 +656,12 @@ export class ContentGenerationAgent {
     request: ContentGenerationRequest,
     serpData?: SERPAnalysisData,
     competitorHeaders?: CompetitorHeader[]
-  ): Promise<AgentResult> {
+  ): Promise<AgentResult<{
+    content: string
+    wordCount: number
+    model: string
+    tokensUsed: number
+  }>> {
     const startTime = Date.now()
 
     try {
@@ -700,7 +717,6 @@ export class ContentGenerationAgent {
       // Validate content
       const wordCount = content.split(/\s+/).length
       const targetMin = request.targetWordCount * 0.9
-      const targetMax = request.targetWordCount * 1.1
 
       console.log(`[Content Agent] Generated ${wordCount} words (target: ${request.targetWordCount})`)
 
@@ -718,11 +734,12 @@ export class ContentGenerationAgent {
         },
         executionTime: Date.now() - startTime
       }
-    } catch (error: any) {
-      console.error('[Content Agent] Error:', error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Content generation failed'
+      console.error('[Content Agent] Error:', message)
       return {
         success: false,
-        error: error.message,
+        error: message,
         executionTime: Date.now() - startTime
       }
     }
@@ -992,7 +1009,7 @@ export class ContentOrchestrator {
         throw new Error(contentResult.error || 'Content generation failed')
       }
 
-      let piece = contentResult.data.content.trim()
+      const piece = contentResult.data.content.trim()
       if (!piece) {
         progressLog.push(`Iteration ${iterations + 1}: No content returned, stopping.`)
         break

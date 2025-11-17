@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaArrowLeft, FaMagic, FaCopy, FaDownload } from 'react-icons/fa'
 import toast from 'react-hot-toast'
-import GenerationForm from './GenerationForm'
+import GenerationForm, { GenerationFormData } from './GenerationForm'
 import ContentPreview from './ContentPreview'
 import SEOScoreCard from './SEOScoreCard'
 
@@ -17,7 +17,7 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
   const [generatedContent, setGeneratedContent] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [seoScore, setSeoScore] = useState<any | null>(null)
+  const [seoScore, setSeoScore] = useState<Record<string, unknown> | null>(null)
 
   const contentTypeTitles: Record<string, string> = {
     blog: 'Blog Post Generator',
@@ -26,7 +26,7 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
     affiliate: 'Affiliate Content Generator',
   }
 
-  const handleGenerate = async (formData: any) => {
+  const handleGenerate = async (formData: GenerationFormData) => {
     setIsGenerating(true)
     setShowPreview(false)
 
@@ -62,9 +62,10 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
       toast.success(
         `Generated ${data.actualWordCount.toLocaleString()} words (requested ${data.requestedWordCount.toLocaleString()}) using ${data.creditsDeducted.toLocaleString()} credits`
       )
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to generate content')
-      console.error('Generation error:', error)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to generate content'
+      toast.error(message)
+      console.error('Generation error:', message)
     } finally {
       setIsGenerating(false)
     }
@@ -129,7 +130,7 @@ export default function ContentGenerator({ contentType, onBack }: ContentGenerat
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <GenerationForm contentType={contentType} onGenerate={handleGenerate} isGenerating={isGenerating} />
+            <GenerationForm onGenerate={handleGenerate} isGenerating={isGenerating} />
           </motion.div>
 
           <motion.div

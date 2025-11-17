@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       nextCursor,
       limit,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Contents GET error:', error)
     return NextResponse.json(
       { error: 'An error occurred while fetching content items' },
@@ -82,11 +82,11 @@ export async function POST(request: NextRequest) {
       requestedLength: body.requestedLength ?? wordCount,
       settings: body.settings ?? {},
       status: body.status ?? 'draft',
-      retryCount: 0,
+      retryCount: body.retryCount ?? 0,
     })
 
     return NextResponse.json({ content: saved })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Contents POST error:', error)
     return NextResponse.json(
       { error: 'An error occurred while creating the content item' },

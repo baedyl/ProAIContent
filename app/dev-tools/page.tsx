@@ -15,7 +15,7 @@ interface Purchase {
   credits_purchased: number
   status: string
   created_at: string
-  metadata: any
+  metadata?: Record<string, unknown>
 }
 
 export default function DevToolsPage() {
@@ -52,7 +52,7 @@ export default function DevToolsPage() {
         const data = await response.json()
         setPurchases(data.purchases || [])
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load purchases:', error)
       toast.error('Failed to load purchases')
     } finally {
@@ -77,8 +77,9 @@ export default function DevToolsPage() {
 
       toast.success(`✅ ${data.creditsAdded.toLocaleString()} credits added!`)
       await loadPurchases()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to complete purchase')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to complete purchase'
+      toast.error(message)
     } finally {
       setIsCompleting(null)
     }
@@ -109,7 +110,7 @@ export default function DevToolsPage() {
             <h1 className="text-3xl font-bold text-slate-900">Development Tools</h1>
           </div>
           <p className="text-slate-500">
-            Manual purchase completion for local development (webhooks don't work on localhost)
+            Manual purchase completion for local development (webhooks don&apos;t work on localhost)
           </p>
         </div>
 

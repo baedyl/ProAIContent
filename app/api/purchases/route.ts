@@ -37,10 +37,11 @@ export async function GET(request: NextRequest) {
       nextCursor: result.nextCursor,
       limit,
     })
-  } catch (error: any) {
-    console.error('Purchases history error:', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unable to fetch purchase history'
+    console.error('Purchases history error:', message)
     return NextResponse.json(
-      { error: error?.message || 'Unable to fetch purchase history' },
+      { error: message },
       { status: 500 }
     )
   }

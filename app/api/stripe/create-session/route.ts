@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
 import {
   createPurchaseRecord,
-  getUserProfile,
   setStripeCustomerId,
   ensureUserProfile,
 } from '@/lib/supabase'
@@ -113,12 +112,13 @@ export async function POST(request: NextRequest) {
       url: checkoutSession.url,
       packages: CREDIT_PACKAGES,
     })
-  } catch (error: any) {
-    console.error('Stripe create-session error:', error)
-    return NextResponse.json(
-      { error: error?.message || 'Unable to create Stripe checkout session' },
-      { status: 500 }
-    )
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to create Stripe checkout session'
+      console.error('Stripe create-session error:', message)
+      return NextResponse.json(
+        { error: message },
+        { status: 500 }
+      )
   }
 }
 

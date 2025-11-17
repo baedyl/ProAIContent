@@ -13,7 +13,7 @@ interface Project {
   persona: string | null
   status: string | null
   brief: string | null
-  metadata: any
+  metadata: Record<string, unknown>
   created_at: string
   updated_at: string
 }
@@ -29,7 +29,7 @@ interface ContentItem {
   published_at: string | null
   content: string
   keywords: string | null
-  metadata: any
+  metadata: Record<string, unknown>
   created_at: string
   updated_at: string
 }
@@ -280,8 +280,9 @@ export default function ProjectsManager() {
       setSelectedProjectId(newProject.id)
       toast.success('Project created')
       setIsModalOpen(false)
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create project')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to create project'
+      toast.error(message)
     } finally {
       setIsSubmittingModal(false)
     }
@@ -312,8 +313,9 @@ export default function ProjectsManager() {
       setAllContents((prev) => prev.filter((item) => item.project_id !== projectId))
 
       toast.success('Project deleted')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete project')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete project'
+      toast.error(message)
     }
   }
 

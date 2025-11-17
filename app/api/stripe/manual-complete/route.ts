@@ -69,14 +69,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Add credits to user account
-    const transaction = await adjustUserCredits({
+  const metadata = purchase.metadata as Record<string, unknown> | undefined
+  const transaction = await adjustUserCredits({
       userId: purchase.user_id,
       amount: purchase.credits_purchased,
       type: 'purchase',
       description: `${purchase.credits_purchased.toLocaleString()} credit purchase (manual completion)`,
       metadata: {
         checkoutSessionId: sessionId,
-        packageId: (purchase.metadata as any)?.packageId ?? null,
+      packageId: metadata?.packageId ?? null,
         manualCompletion: true,
       },
     })
@@ -102,10 +103,11 @@ export async function POST(request: NextRequest) {
         credits: purchase.credits_purchased,
       },
     })
-  } catch (error: any) {
-    console.error('Manual completion error:', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to complete purchase'
+    console.error('Manual completion error:', message)
     return NextResponse.json(
-      { error: error.message || 'Failed to complete purchase' },
+      { error: message },
       { status: 500 }
     )
   }

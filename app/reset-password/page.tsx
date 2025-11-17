@@ -77,8 +77,9 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push('/login')
       }, 2000)
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to reset password')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to reset password'
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }

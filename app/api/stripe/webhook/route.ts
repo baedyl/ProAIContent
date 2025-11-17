@@ -12,6 +12,14 @@ import {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
+type PurchaseMetadata = {
+  packageId?: string
+}
+
+function resolvePackageId(metadata: PurchaseMetadata | undefined) {
+  return metadata?.packageId ?? null
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (!session.id) {
     return
@@ -47,7 +55,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripePaymentId: paymentIntentId ?? undefined,
     metadata: {
       checkoutSessionId: session.id,
-      packageId: session.metadata?.packageId ?? (purchase.metadata as any)?.packageId ?? null,
+      packageId: session.metadata?.packageId ?? resolvePackageId(purchase.metadata as PurchaseMetadata | undefined),
     },
   })
 
@@ -58,7 +66,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       ...(purchase.metadata ?? {}),
       transactionId: transaction.id,
       checkoutSessionId: session.id,
-      packageId: session.metadata?.packageId ?? (purchase.metadata as any)?.packageId ?? null,
+      packageId: session.metadata?.packageId ?? resolvePackageId(purchase.metadata as PurchaseMetadata | undefined),
     },
   })
 }
@@ -109,8 +117,9 @@ export async function POST(request: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret)
-  } catch (error: any) {
-    console.error('Stripe webhook signature verification failed:', error?.message)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Invalid signature'
+    console.error('Stripe webhook signature verification failed:', message)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -126,8 +135,9 @@ export async function POST(request: NextRequest) {
       default:
         break
     }
-  } catch (error) {
-    console.error('Stripe webhook handler error:', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Webhook processing failed'
+    console.error('Stripe webhook handler error:', message)
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
 

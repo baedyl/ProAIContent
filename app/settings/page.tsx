@@ -51,7 +51,7 @@ export default function SettingsPage() {
           setSettings(data.settings)
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching settings:', error)
     } finally {
       setIsLoading(false)
@@ -72,7 +72,8 @@ export default function SettingsPage() {
       } else {
         toast.error('Failed to save settings')
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Settings save error:', error)
       toast.error('An error occurred')
     } finally {
       setIsSaving(false)

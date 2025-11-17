@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Link from 'next/link'
 import { 
   FaNewspaper, 
   FaShoppingCart, 
@@ -129,7 +128,7 @@ export default function Dashboard({ onContentTypeSelect, onSectionChange }: Dash
         animate="visible"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
       >
-        {contentTypes.map((type, index) => (
+        {contentTypes.map(type => (
           <motion.div
             key={type.id}
             variants={itemVariants}

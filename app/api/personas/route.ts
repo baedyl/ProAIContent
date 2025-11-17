@@ -15,7 +15,7 @@ const createPersonaSchema = z.object({
 /**
  * GET - Fetch all personas for the authenticated user
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
 
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ personas: data || [] })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Personas GET error:', error)
     return NextResponse.json(
       { error: 'An error occurred while fetching personas' },
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ persona }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Personas POST error:', error)
     return NextResponse.json(
       { error: 'An error occurred while creating the persona' },

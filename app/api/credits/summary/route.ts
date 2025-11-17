@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -7,7 +7,7 @@ function getMonthStart(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1).toISOString()
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
 
@@ -75,10 +75,11 @@ export async function GET(request: NextRequest) {
         humanWriterRatePerWord: assumedHumanWriterRate,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Credits summary error:', error)
+    const message = error instanceof Error ? error.message : 'Unable to fetch credits summary'
     return NextResponse.json(
-      { error: error?.message || 'Unable to fetch credits summary' },
+      { error: message },
       { status: 500 }
     )
   }

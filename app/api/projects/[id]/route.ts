@@ -46,10 +46,11 @@ export async function GET(
 
     return NextResponse.json({ project: data })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Project GET error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while fetching the project'
     return NextResponse.json(
-      { error: 'An error occurred while fetching the project' },
+      { error: message },
       { status: 500 }
     )
   }
@@ -98,10 +99,11 @@ export async function PATCH(
 
     return NextResponse.json({ project: data })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Project PATCH error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while updating the project'
     return NextResponse.json(
-      { error: 'An error occurred while updating the project' },
+      { error: message },
       { status: 500 }
     )
   }
@@ -136,10 +138,11 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Project deleted successfully' })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Project DELETE error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while deleting the project'
     return NextResponse.json(
-      { error: 'An error occurred while deleting the project' },
+      { error: message },
       { status: 500 }
     )
   }

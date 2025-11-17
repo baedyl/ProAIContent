@@ -16,9 +16,26 @@ interface UserPersona {
   is_default: boolean
 }
 
+export interface GenerationFormData {
+  topic: string
+  keywords: string
+  tone: string
+  style: string
+  wordCount?: number
+  minWords?: number
+  maxWords?: number
+  targetAudience: string
+  additionalInstructions: string
+  personaId: string
+  useSerpAnalysis: boolean
+  includeCompetitorHeaders: boolean
+  includeFAQ: boolean
+  includeVideo: boolean
+  location: string
+}
+
 interface GenerationFormProps {
-  contentType: string
-  onGenerate: (formData: any) => void
+  onGenerate: (formData: GenerationFormData) => void
   isGenerating: boolean
 }
 
@@ -40,12 +57,12 @@ const styles = [
   { value: 'entertaining', label: 'Entertaining' }
 ]
 
-export default function GenerationForm({ contentType, onGenerate, isGenerating }: GenerationFormProps) {
+export default function GenerationForm({ onGenerate, isGenerating }: GenerationFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [useRange, setUseRange] = useState(true) // Default to range mode
   const [userPersonas, setUserPersonas] = useState<UserPersona[]>([])
   const [isLoadingPersonas, setIsLoadingPersonas] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<GenerationFormData>({
     topic: '',
     keywords: '',
     tone: 'professional',
@@ -495,7 +512,7 @@ export default function GenerationForm({ contentType, onGenerate, isGenerating }
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
-                    Create FAQ from "People Also Ask" with schema markup (requires SERP Analysis)
+                    Create FAQ from &quot;People Also Ask&quot; with schema markup (requires SERP Analysis)
                   </p>
                 </div>
               </label>

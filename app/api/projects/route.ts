@@ -14,7 +14,7 @@ function createSlug(value: string) {
 /**
  * GET - Fetch all projects for the authenticated user
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
@@ -35,10 +35,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ projects: data || [] })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Projects GET error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while fetching projects'
     return NextResponse.json(
-      { error: 'An error occurred while fetching projects' },
+      { error: message },
       { status: 500 }
     )
   }
@@ -99,10 +100,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ project: data })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Projects POST error:', error)
+    const message = error instanceof Error ? error.message : 'An error occurred while creating the project'
     return NextResponse.json(
-      { error: 'An error occurred while creating the project' },
+      { error: message },
       { status: 500 }
     )
   }

@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       message: 'If an account exists with this email, you will receive a password reset link shortly.'
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Forgot password error:', error)
     return NextResponse.json(
       { error: 'An error occurred while processing your request' },

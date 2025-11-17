@@ -112,25 +112,29 @@ Provide only the JSON array, no additional text.
  */
 export function parseFAQResponse(response: string): FAQItem[] {
   try {
-    // Try to extract JSON from response
-    const jsonMatch = response.match(/\[[\s\S]*\]/);
+    const jsonMatch = response.match(/\[[\s\S]*\]/)
     if (!jsonMatch) {
       throw new Error('No JSON found in response')
     }
 
-    const faqs = JSON.parse(jsonMatch[0])
-    
-    // Validate structure
-    if (!Array.isArray(faqs)) {
+    const parsed = JSON.parse(jsonMatch[0]) as unknown
+    if (!Array.isArray(parsed)) {
       throw new Error('Response is not an array')
     }
 
-    return faqs.filter((faq: any) => 
-      faq.question && faq.answer &&
-      typeof faq.question === 'string' &&
-      typeof faq.answer === 'string'
-    )
-  } catch (error) {
+    const isFAQItem = (value: unknown): value is FAQItem => {
+      return (
+        typeof value === 'object' &&
+        value !== null &&
+        'question' in value &&
+        'answer' in value &&
+        typeof (value as { question?: unknown }).question === 'string' &&
+        typeof (value as { answer?: unknown }).answer === 'string'
+      )
+    }
+
+    return parsed.filter(isFAQItem)
+  } catch (error: unknown) {
     console.error('Failed to parse FAQ response:', error)
     return []
   }

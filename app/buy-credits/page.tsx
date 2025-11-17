@@ -14,15 +14,34 @@ const fetcher = async (url: string) => {
   return res.json()
 }
 
+interface CreditPackage {
+  id: string
+  name: string
+  description: string
+  amountCents: number
+  credits: number
+}
+
+interface PurchaseRecord {
+  id: string
+  status: 'paid' | 'failed' | string
+  created_at: string
+  amount_cents: number
+  credits_purchased: number
+  metadata?: {
+    packageName?: string
+  }
+}
+
 export default function BuyCreditsPage() {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const { data: packagesData, isLoading: packagesLoading } = useSWR('/api/credits/packages', fetcher)
   const { data: balanceData } = useSWR('/api/credits/balance', fetcher)
   const { data: purchasesData, isLoading: purchasesLoading } = useSWR('/api/purchases?limit=10', fetcher)
 
-  const packages = packagesData?.packages ?? []
+  const packages: CreditPackage[] = packagesData?.packages ?? []
   const balance = balanceData?.balance ?? 0
-  const purchases = purchasesData?.purchases ?? []
+  const purchases: PurchaseRecord[] = purchasesData?.purchases ?? []
 
   const handleCheckout = async (packageId: string) => {
     setIsProcessing(packageId)
@@ -44,8 +63,9 @@ export default function BuyCreditsPage() {
       } else {
         toast.error('Stripe session did not return a redirect URL')
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'Unable to start checkout')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to start checkout'
+      toast.error(message)
     } finally {
       setIsProcessing(null)
     }
@@ -94,7 +114,7 @@ export default function BuyCreditsPage() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {packages.map((pkg: any) => (
+              {packages.map(pkg => (
                 <PackageCard
                   key={pkg.id}
                   name={pkg.name}
@@ -133,7 +153,7 @@ export default function BuyCreditsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {purchases.map((purchase: any) => (
+                  {purchases.map(purchase => (
                     <tr key={purchase.id} className="border-t border-slate-100">
                       <td className="px-4 py-3 font-medium text-slate-800">
                         {purchase.metadata?.packageName || 'Credit purchase'}

@@ -3,7 +3,7 @@
  * Handles authentication with Supabase
  */
 
-import { NextAuthOptions } from 'next-auth'
+import { NextAuthOptions, Session } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import {
@@ -13,6 +13,10 @@ import {
   getUserCreditBalance,
 } from './supabase'
 import { checkRateLimit, resetRateLimit } from './auth-rate-limit'
+
+type SessionUserWithCredits = Session['user'] & {
+  creditsBalance?: number | null
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -57,9 +61,10 @@ export const authOptions: NextAuthOptions = {
             email: data.user.email,
             name: data.user.user_metadata?.name || data.user.email,
           }
-        } catch (error: any) {
-          console.error('Auth error:', error)
-          throw new Error(error.message || 'Authentication failed')
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Authentication failed'
+          console.error('Auth error:', message)
+          throw new Error(message)
         }
       },
     }),
@@ -130,21 +135,25 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       if (token && session.user) {
+        const sessionUser = session.user as SessionUserWithCredits
+
         if (token.id) {
-          session.user.id = token.id as string
+          sessionUser.id = token.id as string
         }
         if (token.email) {
-          session.user.email = token.email as string
+          sessionUser.email = token.email as string
         }
         if (token.name) {
-          session.user.name = token.name as string
+          sessionUser.name = token.name as string
         }
-        ;(session.user as any).creditsBalance = token.creditsBalance ?? null
+
+        sessionUser.creditsBalance = token.creditsBalance ?? null
       }
+
       return session
     },
 
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Handle OAuth sign-ins (Google, etc.)
       if (account?.provider === 'google' && user.email) {
         try {
