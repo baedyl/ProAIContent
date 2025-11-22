@@ -35,13 +35,13 @@ const features = [
   {
     icon: <FaFileAlt className="w-6 h-6" />,
     title: 'Semantic Optimization',
-    description: "ProAI Writer doesn't just place your main keywords. The AI analyzes the SERP and automatically integrates variations, synonyms, and entities.",
+    description: "ProAI Writer doesn&apos;t just place your main keywords. The AI analyzes the SERP and automatically integrates variations, synonyms, and entities.",
     benefits: ['Natural content flow', 'Google-friendly optimization'],
   },
   {
     icon: <FaStar className="w-6 h-6" />,
     title: 'SEO Score',
-    description: "Optimize your content's SEO and receive concrete improvement suggestions. Confidently publish content perfectly optimized for SEO.",
+    description: "Optimize your content&apos;s SEO and receive concrete improvement suggestions. Confidently publish content perfectly optimized for SEO.",
     benefits: ['Clear score for each content', 'Concrete recommendations'],
   },
 ]
@@ -85,7 +85,7 @@ const testimonials = [
     role: 'Site Publisher',
     company: 'ContentPro',
     avatar: '👩',
-    quote: "This is no longer just AI writing, it's true art 🎨 Bravo, I've never seen such a comprehensive tool.",
+    quote: "This is no longer just AI writing, it&apos;s true art 🎨 Bravo, I&apos;ve never seen such a comprehensive tool.",
   },
   {
     name: 'David Martinez',
@@ -273,7 +273,7 @@ export default function LandingPage() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-semibold text-white">+650 website publishers, SEO specialists, Agencies</p>
-                <p className="text-xs text-slate-400">benefit from ProAI Writer's power</p>
+                <p className="text-xs text-slate-400">benefit from ProAI Writer&apos;s power</p>
               </div>
             </motion.div>
           </motion.div>
@@ -448,7 +448,7 @@ export default function LandingPage() {
             </div>
             <p className="text-slate-400 mt-2">
               <strong className="text-white">+650 website publishers, SEO specialists, Agencies</strong> benefit from
-              ProAI Writer's power
+              ProAI Writer&apos;s power
             </p>
           </div>
         </div>
@@ -611,7 +611,7 @@ export default function LandingPage() {
                   </div>
                   <div className="text-sm text-white">
                     <p className="font-semibold">Over 650 site publishers, SEOs, Agencies</p>
-                    <p className="text-white/80">benefit from ProAI Writer's power</p>
+                    <p className="text-white/80">benefit from ProAI Writer&apos;s power</p>
                   </div>
                 </div>
               </div>
