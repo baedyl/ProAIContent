@@ -18,6 +18,7 @@ export default withAuth(
           '/forgot-password',
           '/reset-password',
           '/auth/callback',
+          '/landing',
         ]
 
         // Check if the current path is public
@@ -47,6 +48,6 @@ export const config = {
      * - public folder
      * - login, register, forgot-password, reset-password (auth pages)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|proai-writer.svg|login|register|forgot-password|reset-password|auth/callback).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|proai-writer.svg|login|register|forgot-password|reset-password|auth/callback|landing).*)',
   ],
 }
