@@ -16,7 +16,6 @@ import {
   FaChevronDown,
   FaArrowRight,
   FaQuoteLeft,
-  FaPlay,
 } from 'react-icons/fa'
 
 const features = [
@@ -29,7 +28,7 @@ const features = [
   {
     icon: <FaLink className="w-6 h-6" />,
     title: 'Optimized Internal Linking',
-    description: 'Relevant internal links integrated into your Wisewand-generated content. Pre-construction of internal links to optimize your semantic cocoons.',
+    description: 'Relevant internal links integrated into your generated content. Pre-construction of internal links to optimize your semantic cocoons.',
     benefits: ['Smart link suggestions', 'SEO-optimized structure'],
   },
   {
@@ -148,28 +147,36 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Navigation Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/50">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-b border-slate-200/80 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-500">
-                <FaRocket className="text-white h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold text-white">ProAI Writer</span>
+            <Link href="/" className="flex items-center gap-3">
+              <svg className="h-8 w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" rx="12" fill="url(#gradient)" />
+                <path d="M24 12L32 20L24 28L16 20L24 12Z" fill="white" fillOpacity="0.9" />
+                <path d="M24 20L32 28L24 36L16 28L24 20Z" fill="white" fillOpacity="0.6" />
+                <defs>
+                  <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#6366f1" />
+                    <stop offset="1" stopColor="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">ProAI Writer</span>
             </Link>
 
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-slate-300 hover:text-white transition-colors">
+              <a href="#features" className="text-slate-600 hover:text-indigo-600 transition-colors font-medium">
                 Features
               </a>
-              <a href="#testimonials" className="text-slate-300 hover:text-white transition-colors">
+              <a href="#testimonials" className="text-slate-600 hover:text-indigo-600 transition-colors font-medium">
                 Testimonials
               </a>
-              <a href="#faq" className="text-slate-300 hover:text-white transition-colors">
+              <a href="#faq" className="text-slate-600 hover:text-indigo-600 transition-colors font-medium">
                 FAQ
               </a>
             </nav>
@@ -178,13 +185,13 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="rounded-full border border-slate-600 px-6 py-2 text-sm font-semibold text-white hover:border-slate-500 hover:bg-slate-800 transition-all"
+                className="rounded-full border border-slate-300 px-6 py-2 text-sm font-semibold text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 transition-all"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/50 transition-all hover:shadow-xl hover:shadow-cyan-500/60"
+                className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/50 transition-all hover:shadow-xl hover:shadow-indigo-500/60 hover:scale-105"
               >
                 Try Free
               </Link>
@@ -197,8 +204,8 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-16">
         {/* Animated background effects */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute top-60 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-60 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
         </div>
 
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
@@ -208,13 +215,13 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-center mb-8"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2">
               <span className="flex h-2 w-2">
-                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-500"></span>
+                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-indigo-500 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600"></span>
               </span>
-              <span className="text-xs font-semibold uppercase tracking-wide text-cyan-400">Updates</span>
-              <span className="text-sm text-slate-300">Native Integration with WordPress</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Updates</span>
+              <span className="text-sm text-slate-700">Native Integration with WordPress</span>
             </div>
           </motion.div>
 
@@ -225,14 +232,14 @@ export default function LandingPage() {
             transition={{ delay: 0.1 }}
             className="text-center"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">
               With ProAI Writer, magically
               <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 generate your humanized content
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto">
               Easily generate SEO articles that truly rank, without the hassle.
             </p>
 
@@ -241,39 +248,60 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              className="mb-12"
             >
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-cyan-500/50 transition-all hover:shadow-xl hover:shadow-cyan-500/60 hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/50 transition-all hover:shadow-xl hover:shadow-indigo-500/60 hover:scale-105"
               >
                 <FaRocket />
-                Try Now
+                Start Creating Content
+                <FaArrowRight className="w-4 h-4" />
               </Link>
+            </motion.div>
+
+            {/* Dashboard Preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-16"
+            >
+              <div className="relative mx-auto max-w-6xl">
+                <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-3xl blur-2xl opacity-20" />
+                <div className="relative rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
+                  <img
+                    src="/screenshots/dashboard.png"
+                    alt="ProAI Writer Dashboard"
+                    className="w-full rounded-xl"
+                  />
+                </div>
+              </div>
             </motion.div>
 
             {/* Social Proof */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-12 flex items-center justify-center gap-3"
+              transition={{ delay: 0.4 }}
+              className="mt-16 flex items-center justify-center gap-3"
             >
               <div className="flex -space-x-2">
                 {['👨‍💼', '👩‍💻', '👨‍🎨', '👩‍🔬', '👨‍💻'].map((emoji, i) => (
                   <div
                     key={i}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-800 bg-slate-700 text-lg"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-lg shadow-sm"
                   >
                     {emoji}
                   </div>
                 ))}
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-800 bg-slate-700 text-xs font-semibold text-slate-300">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-xs font-semibold text-white shadow-sm">
                   +650
                 </div>
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-white">+650 website publishers, SEO specialists, Agencies</p>
-                <p className="text-xs text-slate-400">benefit from ProAI Writer&apos;s power</p>
+                <p className="text-sm font-semibold text-slate-900">+650 website publishers, SEO specialists, Agencies</p>
+                <p className="text-xs text-slate-500">benefit from ProAI Writer&apos;s power</p>
               </div>
             </motion.div>
           </motion.div>
@@ -281,7 +309,7 @@ export default function LandingPage() {
       </section>
 
       {/* Overview Section */}
-      <section className="relative py-20 bg-gradient-to-b from-slate-900 to-slate-800">
+      <section className="relative py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -289,15 +317,15 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-cyan-400 mb-4">
+              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-4">
                 Overview
               </span>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
                 Content designed for Google...
                 <br />
-                <span className="text-slate-300">and written for humans.</span>
+                <span className="text-slate-600">and written for humans.</span>
               </h2>
-              <p className="text-lg text-slate-300 mb-8">
+              <p className="text-lg text-slate-600 mb-8">
                 Generate SEO articles that truly perform! Not just for Google, but for your readers too. ProAI Writer
                 combines AI, editorial strategy, and SEO common sense to create useful, readable, and well-ranked
                 content.
@@ -309,32 +337,32 @@ export default function LandingPage() {
                   'An AI-powered engine + editorial expertise',
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <FaCheckCircle className="text-cyan-400 flex-shrink-0" />
-                    <span className="text-slate-200">{item}</span>
+                    <FaCheckCircle className="text-green-500 flex-shrink-0" />
+                    <span className="text-slate-700">{item}</span>
                   </div>
                 ))}
               </div>
-              <button className="inline-flex items-center gap-2 rounded-full bg-cyan-500 px-6 py-3 font-semibold text-white transition-all hover:bg-cyan-600">
-                <FaPlay className="w-4 h-4" />
-                View Presentation
-              </button>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 font-semibold text-white transition-all hover:bg-indigo-700 hover:shadow-lg shadow-indigo-500/50"
+              >
+                <FaRocket />
+                Get Started Free
+              </Link>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative"
+              transition={{ delay: 0.2 }}
             >
-              <div className="rounded-3xl border border-slate-700 bg-slate-800/50 p-6 backdrop-blur-sm">
-                <div className="aspect-video rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-cyan-500/20 mb-4">
-                      <FaPlay className="w-8 h-8 text-cyan-400" />
-                    </div>
-                    <p className="text-slate-300">Product Demo</p>
-                  </div>
-                </div>
+              <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-xl">
+                <img
+                  src="/screenshots/generate.png"
+                  alt="Content Generation Interface"
+                  className="w-full rounded-2xl"
+                />
               </div>
             </motion.div>
           </div>
@@ -342,18 +370,18 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative py-20 bg-slate-800">
+      <section id="features" className="relative py-20 bg-gradient-to-b from-slate-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-cyan-400 mb-4">
+            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-4">
               Features
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
               Rank on the first page with integrated
               <br />
               SEO optimization
             </h2>
-            <p className="text-lg text-slate-300 max-w-3xl mx-auto">
+            <p className="text-lg text-slate-600 max-w-3xl mx-auto">
               Powerful features to optimize every aspect of your content and maximize your chances of reaching top
               results.
             </p>
@@ -367,18 +395,18 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-3xl border border-slate-700 bg-slate-900/50 p-8 backdrop-blur-sm hover:border-cyan-500/50 transition-all"
+                className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg hover:shadow-xl hover:border-indigo-300 transition-all"
               >
-                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-white mb-6">
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white mb-6">
                   {feature.icon}
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
-                <p className="text-slate-300 mb-6">{feature.description}</p>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+                <p className="text-slate-600 mb-6">{feature.description}</p>
                 <div className="space-y-2">
                   {feature.benefits.map((benefit, j) => (
                     <div key={j} className="flex items-center gap-2">
-                      <FaCheckCircle className="text-cyan-400 flex-shrink-0" />
-                      <span className="text-sm text-slate-300">{benefit}</span>
+                      <FaCheckCircle className="text-green-500 flex-shrink-0" />
+                      <span className="text-sm text-slate-700">{benefit}</span>
                     </div>
                   ))}
                 </div>
@@ -389,17 +417,17 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="relative py-20 bg-gradient-to-b from-slate-900 to-slate-800">
+      <section id="testimonials" className="relative py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-cyan-400 mb-4">
+            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-4">
               Testimonials
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Over 650 publishers satisfied with ProAI Writer.
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              What Our Users Say
             </h2>
-            <p className="text-lg text-slate-300">
-              They have saved time, gained traffic... and peace of mind.
+            <p className="text-lg text-slate-600">
+              Trusted by content creators, publishers, and SEO professionals worldwide.
             </p>
           </div>
 
@@ -410,44 +438,38 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="rounded-3xl border border-slate-700 bg-slate-900/50 p-6 backdrop-blur-sm"
+                transition={{ delay: i * 0.1 }}
+                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg hover:shadow-xl transition-all"
               >
-                <FaQuoteLeft className="text-cyan-400/40 text-2xl mb-4" />
-                <p className="text-slate-300 mb-6 italic">{testimonial.quote}</p>
+                <FaQuoteLeft className="text-indigo-200 text-3xl mb-4" />
+                <p className="text-slate-700 mb-6 italic">&quot;{testimonial.quote}&quot;</p>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-700 text-2xl">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <p className="font-semibold text-white">{testimonial.name}</p>
-                    <p className="text-sm text-slate-400">
-                      {testimonial.role}
-                      {testimonial.company && ` - ${testimonial.company}`}
-                    </p>
+                    <p className="font-semibold text-slate-900">{testimonial.name}</p>
+                    <p className="text-sm text-slate-500">{testimonial.role}</p>
+                    {testimonial.company && (
+                      <p className="text-xs text-slate-400">{testimonial.company}</p>
+                    )}
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 font-semibold text-slate-900 transition-all hover:bg-slate-100"
-            >
-              Try ProAI Writer for Free
-            </Link>
-            <div className="mt-6 flex items-center justify-center gap-2">
-              <div className="flex text-yellow-400">
+          <div className="mt-16 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-6 py-3">
+              <div className="flex -space-x-1">
                 {[...Array(5)].map((_, i) => (
-                  <FaStar key={i} className="w-5 h-5" />
+                  <FaStar key={i} className="text-yellow-400 w-5 h-5" />
                 ))}
               </div>
-              <span className="text-white font-semibold">4.9/5 reviews</span>
+              <span className="text-slate-900 font-semibold">4.9/5 reviews</span>
             </div>
-            <p className="text-slate-400 mt-2">
-              <strong className="text-white">+650 website publishers, SEO specialists, Agencies</strong> benefit from
+            <p className="mt-4 text-slate-600">
+              <strong className="text-slate-900">+650 website publishers, SEO specialists, Agencies</strong> benefit from
               ProAI Writer&apos;s power
             </p>
           </div>
@@ -455,7 +477,7 @@ export default function LandingPage() {
       </section>
 
       {/* Integrations Section */}
-      <section className="relative py-20 bg-slate-800">
+      <section className="relative py-20 bg-gradient-to-b from-slate-50 to-white">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -463,23 +485,22 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-cyan-400 mb-4">
+              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-4">
                 Integrations
               </span>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Native Integration with
-                <br />
-                WordPress
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                Export and Publish to Your Sites
               </h2>
-              <p className="text-lg text-slate-300 mb-8">
-                Completely automate your content publishing and update workflow on your favorite CMS.
+              <p className="text-lg text-slate-600 mb-8">
+                Export and publish your content directly from ProAI Writer to your WordPress sites or CMS.
               </p>
+
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-cyan-500 px-6 py-3 font-semibold text-white transition-all hover:bg-cyan-600"
+                className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 font-semibold text-white transition-all hover:bg-indigo-700 hover:shadow-lg shadow-indigo-500/50"
               >
-                Start Installation
-                <FaArrowRight />
+                <FaRocket />
+                Get Started
               </Link>
             </motion.div>
 
@@ -487,52 +508,51 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="space-y-6"
+              transition={{ delay: 0.2 }}
             >
-              {integrations.map((integration, i) => (
-                <div
-                  key={i}
-                  className="rounded-3xl border border-slate-700 bg-slate-900/50 p-6 backdrop-blur-sm"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 text-cyan-400">
-                      {integration.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-white">{integration.title}</h3>
-                        {integration.badge && (
-                          <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-400">
-                            {integration.badge}
-                          </span>
-                        )}
+              <div className="space-y-4">
+                {integrations.map((integration, i) => (
+                  <div
+                    key={i}
+                    className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600">
+                        {integration.icon}
                       </div>
-                      <p className="text-slate-300">{integration.description}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-xl font-bold text-slate-900">{integration.title}</h3>
+                          {integration.badge && (
+                            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+                              {integration.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-slate-600">{integration.description}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="relative py-20 bg-gradient-to-b from-slate-900 to-slate-800">
+      <section id="faq" className="relative py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div>
-              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-cyan-400 mb-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-4">
                 FAQ
               </span>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                We answer all your
-                <br />
-                questions about <span className="text-cyan-400">ProAI Writer</span>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                Frequently Asked Questions
               </h2>
-              <p className="text-lg text-slate-300">
-                Do you have questions about how it works, credits, or subscriptions? We have it all covered. Here are
-                the answers to the most frequently asked questions about ProAI Writer.
+              <p className="text-lg text-slate-600">
+                Everything you need to know about ProAI Writer
               </p>
             </div>
 
@@ -544,29 +564,32 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-2xl border border-slate-700 bg-slate-900/50 backdrop-blur-sm overflow-hidden"
+                  className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-lg transition-all"
                 >
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-slate-800/50"
+                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-slate-50"
                   >
-                    <span className="text-lg font-semibold text-white pr-4">{faq.question}</span>
-                    <FaChevronDown
-                      className={`flex-shrink-0 text-cyan-400 transition-transform ${
-                        openFaq === i ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {openFaq === i && (
+                    <span className="text-lg font-semibold text-slate-900 pr-4">{faq.question}</span>
                     <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      className="border-t border-slate-700"
+                      animate={{ rotate: openFaq === i ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex-shrink-0"
                     >
-                      <p className="p-6 text-slate-300">{faq.answer}</p>
+                      <FaChevronDown className="text-indigo-600" />
                     </motion.div>
-                  )}
+                  </button>
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      height: openFaq === i ? 'auto' : 0,
+                      opacity: openFaq === i ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <p className="p-6 pt-0 text-slate-600">{faq.answer}</p>
+                  </motion.div>
                 </motion.div>
               ))}
             </div>
@@ -575,7 +598,7 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative py-20 bg-gradient-to-br from-cyan-600 to-indigo-600">
+      <section className="relative py-20 bg-gradient-to-br from-indigo-600 to-purple-600">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -584,50 +607,57 @@ export default function LandingPage() {
               viewport={{ once: true }}
             >
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Take action! Boost your visibility today!
+                Start creating amazing content today
               </h2>
               <p className="text-xl text-white/90 mb-8">
-                <strong>Join over 650 publishers and agencies creating more effective, faster SEO content!</strong>{' '}
-                Without sacrificing quality. Try ProAI Writer for free, with no commitment.
+                Join hundreds of content creators already using ProAI Writer to generate SEO-optimized articles.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-slate-900 transition-all hover:bg-slate-100"
-                >
-                  Try now
-                  <FaArrowRight />
-                </Link>
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {['👨‍💼', '👩‍💻', '👨‍🎨', '👩'].map((emoji, i) => (
-                      <div
-                        key={i}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white/20 text-lg backdrop-blur-sm"
-                      >
-                        {emoji}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-sm text-white">
-                    <p className="font-semibold">Over 650 site publishers, SEOs, Agencies</p>
-                    <p className="text-white/80">benefit from ProAI Writer&apos;s power</p>
+
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex -space-x-2">
+                  {['👨‍💼', '👩‍💻', '👨‍🎨', '👩‍🔬'].map((emoji, i) => (
+                    <div
+                      key={i}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white/20 backdrop-blur-sm text-lg"
+                    >
+                      {emoji}
+                    </div>
+                  ))}
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white text-xs font-semibold text-indigo-600">
+                    +650
                   </div>
                 </div>
+                <div className="text-sm text-white">
+                  <p className="font-semibold">+650 happy users</p>
+                  <p className="text-white/80">benefit from ProAI Writer&apos;s power</p>
+                </div>
               </div>
+
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-indigo-600 shadow-lg transition-all hover:shadow-xl hover:scale-105"
+              >
+                <FaRocket />
+                Get Started Free
+                <FaArrowRight className="w-4 h-4" />
+              </Link>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative"
+              transition={{ delay: 0.2 }}
+              className="hidden lg:block"
             >
-              <div className="rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
-                <div className="aspect-video rounded-xl bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <p className="text-lg font-semibold">Dashboard Preview</p>
-                  </div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/10 rounded-3xl blur-2xl" />
+                <div className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm p-4">
+                  <img
+                    src="/screenshots/dashboard.png"
+                    alt="ProAI Writer Interface"
+                    className="w-full rounded-xl opacity-90"
+                  />
                 </div>
               </div>
             </motion.div>
@@ -638,17 +668,25 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative py-16 bg-slate-900 border-t border-slate-800">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            {/* Brand Column */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {/* Brand */}
             <div>
               <Link href="/" className="flex items-center gap-2 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-500">
-                  <FaRocket className="text-white h-5 w-5" />
-                </div>
+                <svg className="h-8 w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" rx="12" fill="url(#gradient-footer)" />
+                  <path d="M24 12L32 20L24 28L16 20L24 12Z" fill="white" fillOpacity="0.9" />
+                  <path d="M24 20L32 28L24 36L16 28L24 20Z" fill="white" fillOpacity="0.6" />
+                  <defs>
+                    <linearGradient id="gradient-footer" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#6366f1" />
+                      <stop offset="1" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
                 <span className="text-xl font-bold text-white">ProAI Writer</span>
               </Link>
-              <p className="text-slate-400 text-sm mb-4">
-                ProAI Writer, simplified and ultra-powerful AI SEO writing.
+              <p className="text-slate-400 text-sm">
+                Generate SEO-optimized content that ranks and converts.
               </p>
             </div>
 
@@ -656,85 +694,72 @@ export default function LandingPage() {
             <div>
               <h3 className="text-white font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li>
-                  <a href="#features" className="text-slate-400 hover:text-cyan-400 transition-colors text-sm">
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <Link href="/buy-credits" className="text-slate-400 hover:text-cyan-400 transition-colors text-sm">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <a href="#faq" className="text-slate-400 hover:text-cyan-400 transition-colors text-sm">
-                    FAQ
-                  </a>
-                </li>
+                {[
+                  { label: 'Home', href: '/' },
+                  { label: 'Features', href: '#features' },
+                  { label: 'Testimonials', href: '#testimonials' },
+                  { label: 'FAQ', href: '#faq' },
+                ].map((link) => (
+                  <li key={link.label}>
+                    <a href={link.href} className="text-slate-400 hover:text-white transition-colors">
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Legal */}
+            {/* Product */}
             <div>
-              <h3 className="text-white font-semibold mb-4">Legal</h3>
+              <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
-                <li>
-                  <Link href="#" className="text-slate-400 hover:text-cyan-400 transition-colors text-sm">
-                    Legal Notice
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-slate-400 hover:text-cyan-400 transition-colors text-sm">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-slate-400 hover:text-cyan-400 transition-colors text-sm">
-                    Terms of Service
-                  </Link>
-                </li>
+                {[
+                  { label: 'Dashboard', href: '/login' },
+                  { label: 'Pricing', href: '/login' },
+                  { label: 'API', href: '/login' },
+                  { label: 'Integrations', href: '/login' },
+                ].map((link) => (
+                  <li key={link.label}>
+                    <Link href={link.href} className="text-slate-400 hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
             {/* Newsletter */}
             <div>
               <h3 className="text-white font-semibold mb-4">Newsletter</h3>
-              <p className="text-slate-400 text-sm mb-4">Receive our latest updates</p>
-              <div className="flex gap-2">
+              <p className="text-slate-400 text-sm mb-4">
+                Get the latest updates and tips for content creation.
+              </p>
+              <form className="flex gap-2">
                 <input
                   type="email"
                   placeholder="Your email"
-                  className="flex-1 rounded-full bg-slate-800 border border-slate-700 px-4 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                  className="flex-1 rounded-full bg-slate-800 border border-slate-700 px-4 py-2 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
                 />
-                <button className="rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 p-2 text-white hover:shadow-lg transition-all">
-                  <FaArrowRight />
+                <button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 p-2 text-white hover:shadow-lg transition-all">
+                  <FaArrowRight className="w-4 h-4" />
                 </button>
-              </div>
+              </form>
             </div>
           </div>
 
-          {/* Bottom Bar */}
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">© 2025 ProAI Writer. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="text-slate-500 hover:text-cyan-400 transition-colors"
-                aria-label="Email"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
+            <p className="text-slate-400 text-sm">
+              © 2025 ProAI Writer. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <a href="#" className="text-slate-400 hover:text-white transition-colors">
+                Privacy
               </a>
-              <a
-                href="#"
-                className="text-slate-500 hover:text-cyan-400 transition-colors"
-                aria-label="YouTube"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
+              <a href="#" className="text-slate-400 hover:text-white transition-colors">
+                Terms
+              </a>
+              <a href="#" className="text-slate-400 hover:text-white transition-colors">
+                Contact
               </a>
             </div>
           </div>
@@ -743,4 +768,3 @@ export default function LandingPage() {
     </div>
   )
 }
-

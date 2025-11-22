@@ -113,7 +113,7 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 flex-shrink-0">
+            <Link href="/landing" className="flex items-center gap-3 flex-shrink-0">
               <div className="relative h-10 w-32">
                 <Image
                   src="/proai-writer.svg"

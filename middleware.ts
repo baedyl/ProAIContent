@@ -13,6 +13,7 @@ export default withAuth(
 
         // Public routes that don't require authentication
         const publicRoutes = [
+          '/',
           '/login',
           '/register',
           '/forgot-password',
@@ -22,7 +23,7 @@ export default withAuth(
         ]
 
         // Check if the current path is public
-        if (publicRoutes.some(route => pathname.startsWith(route))) {
+        if (publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))) {
           return true
         }
 
@@ -48,6 +49,6 @@ export const config = {
      * - public folder
      * - login, register, forgot-password, reset-password (auth pages)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|proai-writer.svg|login|register|forgot-password|reset-password|auth/callback|landing).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|proai-writer.svg|screenshots|login|register|forgot-password|reset-password|auth/callback|landing).*)',
   ],
 }

@@ -18,6 +18,7 @@ import {
   countWords,
 } from '@/lib/content-constraints'
 import { searchYouTubeVideo } from '@/lib/serp-analysis'
+import { sanitizeContent, validateContent } from '@/lib/content-sanitizer'
 
 // Force dynamic rendering (required for NextAuth session)
 export const dynamic = 'force-dynamic'
@@ -69,22 +70,6 @@ const generateSchema = z.object({
   },
   { message: 'minWords must be less than maxWords' }
 )
-
-function removeRefusalFooter(content: string): string {
-  const lines = content.split(/\r?\n/)
-  while (lines.length > 0) {
-    const trimmed = lines[lines.length - 1].trim()
-    if (
-      /^Unfortunately/i.test(trimmed) ||
-      /I can't (complete|fulfill)/i.test(trimmed)
-    ) {
-      lines.pop()
-      continue
-    }
-    break
-  }
-  return lines.join('\n').trim()
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -250,38 +235,70 @@ ${video}
       finalContent += '\n\n' + orchestratorResult.faqHtml
     }
 
-    finalContent = removeRefusalFooter(finalContent)
+    // Sanitize content to remove unwanted LLM artifacts, HTML/CSS, and refusal messages
+    const sanitizationResult = sanitizeContent(finalContent)
+    finalContent = sanitizationResult.content
+
+    // Log sanitization issues if any
+    if (sanitizationResult.wasModified) {
+      console.warn('Content sanitization issues detected:', sanitizationResult.issues)
+    }
+
+    // Check if content is severely corrupted
+    if (sanitizationResult.isSeverelyCorrupted) {
+      console.error('Content is severely corrupted after sanitization:', {
+        issues: sanitizationResult.issues,
+        originalLength: orchestratorResult.content.length,
+        cleanedLength: finalContent.length,
+      })
+      return NextResponse.json(
+        {
+          error: 'Generated content contains too many errors or unwanted elements.',
+          suggestions: [
+            'The AI returned corrupted content (refusal messages, code blocks, etc.)',
+            'Try rephrasing your topic or reducing constraints',
+            'Check if your topic might violate content policies',
+          ],
+          details: {
+            issues: sanitizationResult.issues,
+            contentLength: finalContent.length,
+          },
+        },
+        { status: 422 }
+      )
+    }
+
+    // Validate content quality
+    const contentValidation = validateContent(finalContent)
+    if (!contentValidation.isValid) {
+      console.error('Content validation failed:', contentValidation.reason)
+      return NextResponse.json(
+        {
+          error: 'Generated content failed quality validation.',
+          suggestions: [
+            contentValidation.reason || 'Content does not meet quality standards',
+            'Try a different topic or adjust your generation parameters',
+          ],
+        },
+        { status: 422 }
+      )
+    }
 
     const actualWordCount = countWords(finalContent)
     const attemptCount = 1
 
-    if (!isWithinTolerance(actualWordCount, lower, upper)) {
-      let errorMessage = 'Generated content is significantly shorter than requested.'
-      let suggestions: string[] = []
-      if (actualWordCount === 0) {
-        errorMessage = 'OpenAI returned empty content.'
-        suggestions = ['Try a more permissive topic or reduce advanced constraints', 'Ensure your API key has sufficient quota']
-      } else if (actualWordCount < lower * 0.5) {
-        suggestions = [
-          'Try a smaller word count range',
-          'Simplify the topic or remove conflicting options',
-          'Generate again (AI has randomness)',
-        ]
-      } else if (actualWordCount > upper * 1.5) {
-        errorMessage = 'Generated content is significantly longer than requested.'
-        suggestions = [
-          'Try a higher max word range',
-          'Tighten additional instructions',
-          'Reduce repetition in the prompt',
-        ]
-      } else {
-        suggestions = ['Adjust your topic or range and retry', 'Allow more flexibility in the word count']
-      }
-
+    // More lenient validation: only reject if content is empty or extremely short (< 30% of requested)
+    const minimumAcceptableWords = Math.max(MIN_WORD_COUNT, Math.floor(targetWordCount * 0.3))
+    
+    if (actualWordCount === 0) {
       return NextResponse.json(
         {
-          error: errorMessage,
-          suggestions,
+          error: 'OpenAI returned empty content.',
+          suggestions: [
+            'Try a more permissive topic or reduce advanced constraints',
+            'Ensure your API key has sufficient quota',
+            'Check if your topic violates OpenAI content policy'
+          ],
           details: {
             attempts: attemptCount,
             lastWordCount: actualWordCount,
@@ -290,6 +307,16 @@ ${video}
         },
         { status: 422 }
       )
+    }
+    
+    // Log if content is outside tolerance but still acceptable
+    if (!isWithinTolerance(actualWordCount, lower, upper)) {
+      console.log(`Content word count (${actualWordCount}) outside tolerance range ${lower}-${upper}, but accepting it`)
+      
+      // Only warn if significantly off, but don't reject
+      if (actualWordCount < minimumAcceptableWords) {
+        console.warn(`Content word count (${actualWordCount}) below minimum ${minimumAcceptableWords}`)
+      }
     }
 
     const creditsToDeduct = actualWordCount
@@ -375,6 +402,12 @@ ${video}
           videoIncluded: Boolean(data.includeVideo),
           analytics: orchestratorResult.analytics,
           progressLog: orchestratorResult.progressLog,
+          sanitization: sanitizationResult.wasModified
+            ? {
+                wasModified: true,
+                issuesFound: sanitizationResult.issues,
+              }
+            : null,
         },
       })
 
