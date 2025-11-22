@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FaCheckCircle,
   FaRocket,
@@ -153,19 +154,16 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3">
-              <svg className="h-8 w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="48" height="48" rx="12" fill="url(#gradient)" />
-                <path d="M24 12L32 20L24 28L16 20L24 12Z" fill="white" fillOpacity="0.9" />
-                <path d="M24 20L32 28L24 36L16 28L24 20Z" fill="white" fillOpacity="0.6" />
-                <defs>
-                  <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#6366f1" />
-                    <stop offset="1" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">ProAI Writer</span>
+            <Link href="/" className="flex items-center gap-3 relative h-8">
+              <div className="relative h-8 w-40">
+                <Image 
+                  src="/proai-writer.svg" 
+                  alt="ProAI Writer logo" 
+                  fill
+                  className="object-contain" 
+                  priority 
+                />
+              </div>
             </Link>
 
             {/* Navigation Links */}
@@ -671,19 +669,15 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {/* Brand */}
             <div>
-              <Link href="/" className="flex items-center gap-2 mb-4">
-                <svg className="h-8 w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="48" rx="12" fill="url(#gradient-footer)" />
-                  <path d="M24 12L32 20L24 28L16 20L24 12Z" fill="white" fillOpacity="0.9" />
-                  <path d="M24 20L32 28L24 36L16 28L24 20Z" fill="white" fillOpacity="0.6" />
-                  <defs>
-                    <linearGradient id="gradient-footer" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#6366f1" />
-                      <stop offset="1" stopColor="#8b5cf6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <span className="text-xl font-bold text-white">ProAI Writer</span>
+              <Link href="/" className="flex items-center mb-4 relative h-8">
+                <div className="relative h-8 w-40 brightness-0 invert">
+                  <Image 
+                    src="/proai-writer.svg" 
+                    alt="ProAI Writer logo" 
+                    fill
+                    className="object-contain" 
+                  />
+                </div>
               </Link>
               <p className="text-slate-400 text-sm">
                 Generate SEO-optimized content that ranks and converts.

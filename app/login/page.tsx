@@ -63,15 +63,15 @@ export default function LoginPage() {
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="relative mx-auto mb-4 h-16 w-full flex-shrink-0">
+          <Link href="/" className="relative mx-auto mb-4 h-16 w-full flex-shrink-0 block">
             <Image 
               src="/proai-writer.svg" 
               alt="ProAI Writer logo" 
               fill
-              className="object-contain drop-shadow-lg" 
+              className="object-contain drop-shadow-lg cursor-pointer hover:opacity-80 transition-opacity" 
               priority 
             />
-          </div>
+          </Link>
           <h1 className="text-3xl font-semibold text-slate-900 mb-2">
             Welcome back to ProAI Writer
           </h1>
