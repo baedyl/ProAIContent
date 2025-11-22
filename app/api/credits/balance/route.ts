@@ -18,8 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Type assertion to access the id property added in jwt callback
-    const userId = (session.user as any).id
+    // Access user ID from session
+    const userId = session.user.id
 
     if (!userId) {
       console.error('No user ID in session:', session.user)
