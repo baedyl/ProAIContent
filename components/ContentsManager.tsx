@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaFilter, FaSearch, FaTable, FaThLarge, FaEdit, FaTrash, FaFolder, FaTimes, FaSave } from 'react-icons/fa'
+import { FaFilter, FaSearch, FaTable, FaThLarge, FaEdit, FaTrash, FaFolder, FaTimes } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 
 interface Project {
@@ -62,6 +63,7 @@ const Tabs = [
 ]
 
 export default function ContentsManager() {
+  const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [contents, setContents] = useState<ContentItem[]>([])
   const [activeTab, setActiveTab] = useState<string>('all')
@@ -72,7 +74,6 @@ export default function ContentsManager() {
   const [isLoading, setIsLoading] = useState(true)
   
   // Modal states
-  const [editingContent, setEditingContent] = useState<ContentItem | null>(null)
   const [assigningContent, setAssigningContent] = useState<ContentItem | null>(null)
   const [deletingContent, setDeletingContent] = useState<ContentItem | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -133,30 +134,8 @@ export default function ContentsManager() {
     return map
   }, [projects])
 
-  const handleEdit = async (content: ContentItem, updates: { title?: string; content?: string }) => {
-    setIsSaving(true)
-    try {
-      const response = await fetch(`/api/contents/${content.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update content')
-      }
-
-      const data = await response.json()
-      setContents(prev => prev.map(c => c.id === content.id ? data.content : c))
-      setEditingContent(null)
-      toast.success('Content updated successfully')
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update content'
-      toast.error(message)
-    } finally {
-      setIsSaving(false)
-    }
+  const handleEdit = (contentId: string) => {
+    router.push(`/contents/${contentId}/edit`)
   }
 
   const handleDelete = async (content: ContentItem) => {
@@ -366,7 +345,11 @@ export default function ContentsManager() {
                   const statusLabel = STATUS_LABELS[item.status] || item.status
 
                   return (
-                    <tr key={item.id} className="hover:bg-indigo-50/40">
+                    <tr 
+                      key={item.id} 
+                      className="hover:bg-indigo-50/40 cursor-pointer"
+                      onClick={() => handleEdit(item.id)}
+                    >
                       <td className="px-6 py-4 text-slate-900 font-medium">
                         <div>{item.title}</div>
                         {item.settings?.keywords && (
@@ -394,21 +377,30 @@ export default function ContentsManager() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setEditingContent(item)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEdit(item.id)
+                            }}
                             className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                             title="Edit content"
                           >
                             <FaEdit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => setAssigningContent(item)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setAssigningContent(item)
+                            }}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Assign to project"
                           >
                             <FaFolder className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => setDeletingContent(item)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeletingContent(item)
+                            }}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete content"
                           >
@@ -432,7 +424,8 @@ export default function ContentsManager() {
               return (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all"
+                  onClick={() => handleEdit(item.id)}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer"
                 >
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>{typeLabel}</span>
@@ -454,21 +447,30 @@ export default function ContentsManager() {
                   </div>
                   <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
                     <button
-                      onClick={() => setEditingContent(item)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEdit(item.id)
+                      }}
                       className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                       title="Edit content"
                     >
                       <FaEdit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setAssigningContent(item)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setAssigningContent(item)
+                      }}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Assign to project"
                     >
                       <FaFolder className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setDeletingContent(item)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeletingContent(item)
+                      }}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete content"
                     >
@@ -481,73 +483,6 @@ export default function ContentsManager() {
           </div>
         )}
       </motion.div>
-
-      {/* Edit Modal */}
-      <AnimatePresence>
-        {editingContent && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-            >
-              <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-slate-900">Edit Content</h3>
-                <button
-                  onClick={() => setEditingContent(null)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <FaTimes className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    defaultValue={editingContent.title}
-                    id="edit-title"
-                    className="input-field"
-                    placeholder="Enter title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Content</label>
-                  <textarea
-                    defaultValue={editingContent.content}
-                    id="edit-content"
-                    rows={12}
-                    className="textarea-field"
-                    placeholder="Enter content"
-                  />
-                </div>
-                <div className="flex items-center justify-end gap-3 pt-4">
-                  <button
-                    onClick={() => setEditingContent(null)}
-                    className="btn-secondary"
-                    disabled={isSaving}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      const title = (document.getElementById('edit-title') as HTMLInputElement)?.value
-                      const content = (document.getElementById('edit-content') as HTMLTextAreaElement)?.value
-                      handleEdit(editingContent, { title, content })
-                    }}
-                    className="btn-primary flex items-center gap-2"
-                    disabled={isSaving}
-                  >
-                    <FaSave />
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Assign to Project Modal */}
       <AnimatePresence>

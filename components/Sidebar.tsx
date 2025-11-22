@@ -2,6 +2,7 @@
 
 import { ComponentType } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   FaClipboardList,
   FaCogs,
@@ -37,6 +38,8 @@ export default function Sidebar({
   totalCreditsUsed = 0,
   totalContentsGenerated = 0
 }: SidebarProps) {
+  const router = useRouter()
+  
   const groups: { title: string; items: NavItem[] }[] = [
     {
       title: 'Project',
@@ -114,7 +117,14 @@ export default function Sidebar({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => !item.disabled && onSectionChange(item.id)}
+                    onClick={() => {
+                      if (item.disabled) return
+                      if (item.id === 'contents') {
+                        router.push('/contents')
+                      } else {
+                        onSectionChange(item.id)
+                      }
+                    }}
                     className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${
                       isActive
                         ? 'border-indigo-500 bg-indigo-50/80 text-indigo-700 shadow-md shadow-indigo-200'

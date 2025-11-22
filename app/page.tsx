@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 import Sidebar from '@/components/Sidebar'
 import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay'
@@ -19,11 +20,20 @@ const fetcher = async (url: string) => {
 }
 
 export default function WorkspacePage() {
+  const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState<'dashboard' | 'contents' | 'projects' | 'personas' | 'generator'>('dashboard')
   const [activeContentType, setActiveContentType] = useState<string | null>(null)
 
   const { data: balanceData, isLoading: balanceLoading } = useSWR('/api/credits/balance', fetcher)
   const { data: summaryData, isLoading: summaryLoading } = useSWR('/api/credits/summary', fetcher)
+
+  // Handle URL parameters for navigation from other pages
+  useEffect(() => {
+    const section = searchParams.get('section')
+    if (section === 'projects' || section === 'personas') {
+      setActiveSection(section)
+    }
+  }, [searchParams])
 
   const quickStats = useMemo(
     () => ({

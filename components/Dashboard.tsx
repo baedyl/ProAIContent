@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
   FaNewspaper, 
@@ -8,7 +9,8 @@ import {
   FaBalanceScale,
   FaFolderOpen,
   FaLink,
-  FaUsers
+  FaUsers,
+  FaFileAlt
 } from 'react-icons/fa'
 
 interface ContentTypeCard {
@@ -66,7 +68,17 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onContentTypeSelect, onSectionChange }: DashboardProps) {
+  const router = useRouter()
+  
   const quickLinks: QuickLink[] = [
+    {
+      id: 'contents',
+      title: 'Contents',
+      description: 'Browse and manage all your content',
+      icon: <FaFileAlt className="w-6 h-6" />,
+      color: 'from-blue-500 to-indigo-500',
+      onClick: () => router.push('/contents')
+    },
     {
       id: 'projects',
       title: 'Projects',
@@ -167,7 +179,7 @@ export default function Dashboard({ onContentTypeSelect, onSectionChange }: Dash
         <h3 className="text-2xl font-bold mb-6 text-slate-900">
           Quick Access
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickLinks.map((link) => (
             <motion.div
               key={link.id}
