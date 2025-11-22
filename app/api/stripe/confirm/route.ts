@@ -23,6 +23,9 @@ function safeMetadata(metadata: unknown) {
   return {}
 }
 
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

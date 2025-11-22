@@ -140,17 +140,16 @@ export const authOptions = {
       if (token && session.user) {
         const sessionUser = session.user as SessionUserWithCredits
 
-        if (token.id) {
-          sessionUser.id = token.id as string
-        }
-        if (token.email) {
-          sessionUser.email = token.email as string
-        }
-        if (token.name) {
-          sessionUser.name = token.name as string
-        }
-
+        // Ensure we always set the id from token
+        sessionUser.id = (token.id || token.sub) as string
+        sessionUser.email = (token.email || session.user.email) as string
+        sessionUser.name = (token.name || session.user.name) as string
         sessionUser.creditsBalance = token.creditsBalance ?? null
+
+        // Debug logging for production issues
+        if (!sessionUser.id) {
+          console.error('Session callback: No user ID available', { token, session })
+        }
       }
 
       return session

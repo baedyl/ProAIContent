@@ -16,6 +16,9 @@ const updatePersonaSchema = z.object({
 /**
  * GET - Fetch a single persona
  */
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

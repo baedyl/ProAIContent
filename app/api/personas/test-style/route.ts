@@ -17,6 +17,9 @@ const testStyleSchema = z.object({
 /**
  * POST - Test a persona's writing style by generating sample text
  */
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

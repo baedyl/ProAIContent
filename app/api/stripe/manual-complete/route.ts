@@ -17,6 +17,9 @@ import {
  * 
  * In production, this should be removed or heavily restricted.
  */
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   // Only allow in development
   if (process.env.NODE_ENV === 'production') {

@@ -18,6 +18,10 @@ import {
   countWords,
 } from '@/lib/content-constraints'
 import { searchYouTubeVideo } from '@/lib/serp-analysis'
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60 // Allow up to 60 seconds for content generation
 import {
   ContentOrchestrator,
   type ContentGenerationRequest,

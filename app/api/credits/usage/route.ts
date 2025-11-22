@@ -12,6 +12,9 @@ const querySchema = z.object({
     .transform(value => (value ? Math.max(1, Math.min(180, parseInt(value, 10))) : 30)),
 })
 
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -16,6 +16,9 @@ const createPersonaSchema = z.object({
 /**
  * GET - Fetch all personas for the authenticated user
  */
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -21,6 +21,9 @@ function countWords(content: string): number {
 /**
  * GET - Fetch a single content item
  */
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

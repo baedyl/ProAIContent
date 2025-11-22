@@ -4,18 +4,31 @@ import type { Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUserProfile, getUserCreditBalance } from '@/lib/supabase'
 
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = await getServerSession(authOptions as any) as Session | null
 
-    if (!session?.user?.id) {
+    if (!session?.user) {
+      console.error('No session found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Type assertion to access the id property added in jwt callback
+    const userId = (session.user as any).id
+
+    if (!userId) {
+      console.error('No user ID in session:', session.user)
+      return NextResponse.json({ error: 'User ID not found in session' }, { status: 401 })
+    }
+
     const [profile, balance] = await Promise.all([
-      getUserProfile(session.user.id),
-      getUserCreditBalance(session.user.id),
+      getUserProfile(userId),
+      getUserCreditBalance(userId),
     ])
 
     return NextResponse.json({

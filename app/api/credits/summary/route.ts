@@ -4,6 +4,9 @@ import type { Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
+
 function getMonthStart(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1).toISOString()
 }

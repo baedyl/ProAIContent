@@ -7,6 +7,9 @@ import {
   recordGeneratedContent,
 } from '@/lib/supabase'
 
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
+
 function countWords(content: string): number {
   return content
     .replace(/[#*_`>\\-]/g, ' ')

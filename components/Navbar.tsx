@@ -48,7 +48,16 @@ export default function Navbar() {
   const { data: balanceData } = useSWR(
     session ? '/api/credits/balance' : null,
     fetcher,
-    { refreshInterval: 30000 } // Refresh every 30 seconds
+    { 
+      refreshInterval: 30000, // Refresh every 30 seconds
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Stop retrying after 3 attempts
+        if (retryCount >= 3) return
+        // Retry after 5 seconds
+        setTimeout(() => revalidate({ retryCount }), 5000)
+      },
+      shouldRetryOnError: false, // Don't auto-retry on error
+    }
   )
 
   const credits = balanceData?.balance ?? 0

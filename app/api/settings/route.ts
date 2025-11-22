@@ -7,6 +7,9 @@ import { getUserSettings, createDefaultUserSettings, updateUserSettings } from '
 /**
  * GET - Fetch user settings
  */
+
+// Force dynamic rendering (required for NextAuth session)
+export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
