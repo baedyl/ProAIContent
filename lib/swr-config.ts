@@ -3,14 +3,27 @@
  * Prevents infinite loops and optimizes data fetching
  */
 
+interface ErrorRetryOptions {
+  retryCount: number
+}
+
 export const swrConfig = {
   // Retry configuration to prevent infinite loops
-  onErrorRetry: (error: any, key: string, config: any, revalidate: any, { retryCount }: any) => {
+  onErrorRetry: (
+    error: unknown,
+    key: string,
+    config: unknown,
+    revalidate: (opts: ErrorRetryOptions) => void,
+    { retryCount }: ErrorRetryOptions
+  ) => {
+    // Type guard to check if error has status property
+    const errorStatus = (error as { status?: number })?.status
+
     // Never retry on 404
-    if (error.status === 404) return
+    if (errorStatus === 404) return
 
     // Never retry on 401 (unauthorized)
-    if (error.status === 401) return
+    if (errorStatus === 401) return
 
     // Only retry up to 3 times
     if (retryCount >= 3) return
