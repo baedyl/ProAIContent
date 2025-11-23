@@ -16,11 +16,13 @@ The `calculateMaxTokens` function was using incorrect assumptions:
 2. **No model-specific limits**: Used a hardcoded cap of 12,000
    - Different models have different limits
    - `gpt-4-turbo-preview` only supports 4,096 completion tokens
+   - Note: Current default model `gpt-4o` supports 16,384 completion tokens
 
 3. **Example calculation (WRONG):**
    ```
    1000 words × 4.2 = 4,200 tokens
    → Exceeds gpt-4-turbo-preview limit of 4,096
+   Note: This was resolved by switching to gpt-4o (16,384 token limit)
    ```
 
 ## Solution
@@ -44,6 +46,7 @@ const TOKENS_PER_WORD_MULTIPLIER = 1.5  // Conservative but safe
 ### 2. Added Model-Specific Limits
 ```typescript
 const MODEL_TOKEN_LIMITS: Record<string, number> = {
+  'gpt-4o': 16384,
   'gpt-4-turbo-preview': 4096,
   'gpt-4-turbo': 4096,
   'gpt-4': 8192,
@@ -72,7 +75,7 @@ export function calculateMaxTokens(targetWordCount: number, model?: string): num
 ### 4. Updated API Call
 Now passes model name to `calculateMaxTokens`:
 ```typescript
-const modelName = process.env.OPENAI_MODEL || 'gpt-4-turbo-preview'
+const modelName = process.env.OPENAI_MODEL || 'gpt-4o'
 const maxTokens = calculateMaxTokens(upper, modelName)
 
 console.log(`Using model ${modelName} with max_tokens=${maxTokens} for ${upper} words`)
@@ -116,6 +119,7 @@ With the new calculation, here's how many words each model can handle:
 | Model | Token Limit | Max Words (95% buffer) |
 |-------|-------------|------------------------|
 | gpt-3.5-turbo | 4,096 | ~2,594 words |
+| gpt-4o | 16,384 | ~10,922 words |
 | gpt-4-turbo-preview | 4,096 | ~2,594 words |
 | gpt-4 | 8,192 | ~5,188 words |
 | gpt-3.5-turbo-16k | 16,384 | ~10,376 words |
@@ -127,7 +131,8 @@ With the new calculation, here's how many words each model can handle:
 
 Based on the new calculations:
 
-### For gpt-4-turbo-preview / gpt-3.5-turbo:
+### For older models (gpt-4-turbo-preview / gpt-3.5-turbo):
+**Note: The default model is now `gpt-4o` with much higher token limits (16,384 tokens).**
 - ✅ **Recommended**: 500-2,000 words
 - ⚠️ **Maximum**: 2,500 words (leaves room for prompt)
 - ❌ **Avoid**: 3,000+ words (may hit limits)
@@ -147,7 +152,7 @@ Based on the new calculations:
 ### Before Fix:
 ```bash
 Request: 1000 words (range: 600-1000)
-Model: gpt-4-turbo-preview
+Model: gpt-4o
 Calculated max_tokens: 4,200
 Result: ❌ ERROR - max_tokens too large
 ```
@@ -155,7 +160,7 @@ Result: ❌ ERROR - max_tokens too large
 ### After Fix:
 ```bash
 Request: 1000 words (range: 600-1000)
-Model: gpt-4-turbo-preview
+Model: gpt-4o
 Calculated max_tokens: 1,500
 Result: ✅ SUCCESS - Content generated
 ```
@@ -237,8 +242,8 @@ If you need to generate very long content:
 
 Check your server logs to see token usage:
 ```
-Attempt 1: Using model gpt-4-turbo-preview with max_tokens=1500 for 1000 words
-OpenAI Response: { model: 'gpt-4-turbo-preview', finishReason: 'stop', ... }
+Attempt 1: Using model gpt-4o with max_tokens=1500 for 1000 words
+OpenAI Response: { model: 'gpt-4o', finishReason: 'stop', ... }
 ```
 
 If you see `finishReason: 'length'`, the content was cut off due to token limit. This shouldn't happen anymore with the fix.

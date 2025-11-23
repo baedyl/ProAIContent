@@ -87,7 +87,7 @@ finish_reason: 'content_filter'
 
 **Check server logs for:**
 ```
-Error: The model `gpt-4-turbo-preview` does not exist
+Error: The model `gpt-4o` does not exist
 Error: 404 - Model not found
 ```
 
@@ -106,7 +106,7 @@ Error: 404 - Model not found
 **Available Models:**
 - `gpt-3.5-turbo` - Fast, cheaper (everyone has access)
 - `gpt-4` - Better quality (requires GPT-4 API access)
-- `gpt-4-turbo-preview` - Latest, best quality (requires GPT-4 API access)
+- `gpt-4o` - Latest, best quality (requires GPT-4 API access)
 
 ---
 
@@ -238,7 +238,7 @@ Expected output:
 {
   "hasOpenAIKey": true,
   "keyPrefix": "sk-proj",
-  "model": "gpt-4-turbo-preview"
+  "model": "gpt-4o"
 }
 ```
 
@@ -285,7 +285,7 @@ If you get an error, the problem is with your OpenAI account/key, not the app.
 1. **`.env.local`** - Environment variables
    ```env
    OPENAI_API_KEY=sk-...
-   OPENAI_MODEL=gpt-4-turbo-preview
+   OPENAI_MODEL=gpt-4o
    ```
 
 2. **Server logs** - Terminal where `npm run dev` is running

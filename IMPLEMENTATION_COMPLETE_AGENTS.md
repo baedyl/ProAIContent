@@ -280,7 +280,7 @@ POST /api/generate-advanced
 ```bash
 # OpenAI (Required)
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4-turbo-preview  # optional
+OPENAI_MODEL=gpt-4o  # optional
 
 # SerpAPI (Required for analysis)
 SERPAPI_KEY=your_key_here

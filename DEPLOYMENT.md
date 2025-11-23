@@ -29,7 +29,7 @@ The following environment variables must be configured in your Render dashboard:
 
 #### OpenAI
 - `OPENAI_API_KEY` - Your OpenAI API key
-- `OPENAI_MODEL` - (Optional, defaults to `gpt-4-turbo-preview`)
+- `OPENAI_MODEL` - (Optional, defaults to `gpt-4o`)
 
 #### SerpAPI
 - `SERPAPI_KEY` - Your SerpAPI key for SERP analysis

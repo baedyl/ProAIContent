@@ -68,7 +68,7 @@ Or create it manually with this content:
 
 ```env
 OPENAI_API_KEY=your_actual_api_key_here
-OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MODEL=gpt-4o
 ```
 
 ### 4. Verify Installation

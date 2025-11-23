@@ -274,7 +274,7 @@ POST /api/generate-advanced
 {
   "content": "# Full Article Content\n\n...",
   "metadata": {
-    "model": "gpt-4-turbo-preview",
+    "model": "gpt-4o",
     "timestamp": "2025-01-16T...",
     "wordCount": 2100,
     "targetWordCount": 2000,
@@ -328,7 +328,7 @@ POST /api/generate-advanced
 ```bash
 # OpenAI (Required)
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4-turbo-preview  # Optional, defaults to this
+OPENAI_MODEL=gpt-4o  # Optional, defaults to this
 
 # SerpAPI (Required for SERP Analysis)
 SERPAPI_KEY=your_serpapi_key
