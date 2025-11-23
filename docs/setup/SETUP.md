@@ -49,8 +49,8 @@ touch .env.local
 # Required: Your OpenAI API Key
 OPENAI_API_KEY=sk-your-api-key-here
 
-# Optional: Customize the model (default: gpt-4-turbo-preview)
-OPENAI_MODEL=gpt-4-turbo-preview
+# Optional: Customize the model (default: gpt-4o)
+OPENAI_MODEL=gpt-4o
 
 # Optional: Rate limiting
 RATE_LIMIT_MAX_REQUESTS=100

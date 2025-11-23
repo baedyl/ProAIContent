@@ -53,7 +53,7 @@ Create production-ready, humanized content with precise word-count enforcement, 
 ## Operational Notes
 - **Stripe:** Update webhook endpoint to `/api/stripe/webhook` and add the signing secret to the env file.
 - **Supabase:** Service role key is required for the `adjust_user_credits` RPC; ensure RLS policies remain enabled.
-- **OpenAI:** Default model is `gpt-4-turbo-preview`; override via `OPENAI_MODEL` if needed.
+- **OpenAI:** Default model is `gpt-4o`; override via `OPENAI_MODEL` if needed.
 - **Rate Limiting:** `lib/rate-limit.ts` enforces per-user throttling on generation (10 req/min).
 
 ## Quality & Tooling

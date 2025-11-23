@@ -6,6 +6,7 @@
 import OpenAI from 'openai'
 import { getJson } from 'serpapi'
 import { calculateTokenBudget, countWords } from '@/lib/content-constraints'
+import type { Persona } from '@/lib/personas'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -482,7 +483,7 @@ export class FAQGenerationAgent {
       const selectedQuestions = paaQuestions.slice(0, 7)
 
       // Generate answers using AI
-      const modelName = process.env.OPENAI_MODEL || 'gpt-4-turbo-preview'
+      const modelName = process.env.OPENAI_MODEL || 'gpt-4o'
       const prompt = `You are an expert writer creating FAQ answers for an article about "${topic}".
 
 Generate comprehensive, helpful answers for these questions. Each answer should:
@@ -652,7 +653,7 @@ ${faqItems}
 
 /**
  * Content Generation Agent
- * Generate human-like content using advanced techniques to avoid AI detection
+ * Generate human-like content using step-by-step process to avoid hallucinations
  */
 export class ContentGenerationAgent {
   async execute(
@@ -664,61 +665,33 @@ export class ContentGenerationAgent {
     wordCount: number
     model: string
     tokensUsed: number
+    generationSteps: string[]
   }>> {
     const startTime = Date.now()
+    const generationSteps: string[] = []
 
     try {
       console.log(`[Content Agent] Generating ${request.targetWordCount} word article on "${request.topic}"`)
+      
+      // Load persona
+      const { getPersona } = await import('./personas')
+      const persona = getPersona(request.personaId || 'default')
+      generationSteps.push(`Using persona: ${persona.name}`)
 
-      // Build comprehensive prompt
-      const prompt = this.buildPrompt(request, serpData, competitorHeaders)
-
-      // Calculate required tokens (1.5x word count for safety)
-      const modelName = process.env.OPENAI_MODEL || 'gpt-4-turbo-preview'
-      const { estimatedTokens, maxSafeTokens } = calculateTokenBudget(request.targetWordCount, modelName)
-
-      if (estimatedTokens > maxSafeTokens) {
-        throw new Error(
-          `Requesting ${request.targetWordCount} words requires approximately ${estimatedTokens} tokens, but ${modelName} only allows ${maxSafeTokens}. ` +
-          'Reduce the target length or switch to a higher-capacity model (e.g. gpt-4-32k).'
-        )
-      }
-
-      const targetTokens = Math.min(maxSafeTokens, Math.max(estimatedTokens, Math.floor(maxSafeTokens * 0.9)))
-
-      console.log(`[Content Agent] Using ${targetTokens} max tokens for ${request.targetWordCount} words (model limit ${maxSafeTokens})`)
-
-      // Generate content with optimized parameters for human-like output
-      const completion = await openai.chat.completions.create({
-        model: modelName,
-        messages: [
-          {
-            role: 'system',
-            content: this.getSystemPrompt()
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.95, // High creativity
-        max_tokens: targetTokens,
-        presence_penalty: 0.8, // Encourage vocabulary diversity
-        frequency_penalty: 0.6, // Reduce repetition
-        top_p: 0.95, // Nucleus sampling
-      })
-
-      let content = completion.choices[0]?.message?.content || ''
-
-      if (!content) {
-        throw new Error('No content generated')
-      }
-
-      // Apply humanization post-processing
-      content = this.humanizeContent(content)
+      // Step 1: Generate Research Summary & Outline
+      generationSteps.push('Step 1: Creating research-based outline...')
+      const outline = await this.generateOutline(request, serpData, competitorHeaders, persona)
+      
+      // Step 2: Generate Full Content based on outline
+      generationSteps.push('Step 2: Writing full content from outline...')
+      const fullContent = await this.generateFullContent(request, outline, serpData, persona)
+      
+      // Step 3: Apply humanization post-processing
+      generationSteps.push('Step 3: Humanizing content...')
+      const humanizedContent = this.humanizeContent(fullContent)
 
       // Validate content
-      const wordCount = content.split(/\s+/).length
+      const wordCount = countWords(humanizedContent)
       const targetMin = request.targetWordCount * 0.9
 
       console.log(`[Content Agent] Generated ${wordCount} words (target: ${request.targetWordCount})`)
@@ -730,10 +703,11 @@ export class ContentGenerationAgent {
       return {
         success: true,
         data: {
-          content,
+          content: humanizedContent,
           wordCount,
-          model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-          tokensUsed: completion.usage?.total_tokens || 0
+          model: process.env.OPENAI_MODEL || 'gpt-4o',
+          tokensUsed: 0, // Will be summed from individual steps
+          generationSteps
         },
         executionTime: Date.now() - startTime
       }
@@ -748,7 +722,111 @@ export class ContentGenerationAgent {
     }
   }
 
+  /**
+   * Step 1: Generate a detailed outline based on SERP data
+   */
+  private async generateOutline(
+    request: ContentGenerationRequest,
+    serpData?: SERPAnalysisData,
+    competitorHeaders?: CompetitorHeader[],
+    persona?: Persona
+  ): Promise<string> {
+    const { buildPersonaPrompt } = await import('./personas')
+    
+    const systemPrompt = `${buildPersonaPrompt(persona!)}
+
+You are creating a detailed content outline based on real SERP data and competitor analysis.
+
+Your role is to:
+1. Analyze what's currently ranking on Google
+2. Identify content gaps and opportunities
+3. Create a comprehensive outline that can outrank competitors
+4. Ground all sections in real data to avoid hallucinations`
+
+    const userPrompt = this.buildOutlinePrompt(request, serpData, competitorHeaders)
+
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4o',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.7, // Moderate creativity for structure
+      max_tokens: 2000,
+    })
+
+    return completion.choices[0]?.message?.content || ''
+  }
+
+  /**
+   * Step 2: Generate full content from the outline
+   */
+  private async generateFullContent(
+    request: ContentGenerationRequest,
+    outline: string,
+    serpData?: SERPAnalysisData,
+    persona?: Persona
+  ): Promise<string> {
+    const { buildPersonaPrompt } = await import('./personas')
+    
+    const systemPrompt = `${buildPersonaPrompt(persona!)}
+
+CRITICAL - HUMAN WRITING CHARACTERISTICS:
+1. Write conversationally like you're talking to a friend over coffee
+2. Use contractions extensively (don't, can't, you'll, we're, it's)
+3. Vary sentence length dramatically: Short punchy sentences. Then long, flowing sentences that explore ideas with multiple clauses and natural tangents.
+4. Include personal opinions and subjective language ("I think", "in my view", "arguably")
+5. Use rhetorical questions to engage readers
+6. Add parenthetical asides (like this) that feel natural
+7. Start sentences with "And", "But", "So" when it flows naturally
+8. Use em-dashes—like this—for emphasis and natural pauses
+9. Include hedging language: might, could, perhaps, seems, generally
+10. Add emotional words: love, hate, amazing, frustrating, exciting
+11. Use idioms and colloquial expressions naturally
+12. Vary paragraph length: one-sentence paragraphs for emphasis, then longer analytical paragraphs
+13. Include specific details and numbers (not just round numbers)
+14. Express uncertainty and nuance when appropriate
+15. Use transitions that sound conversational: "Look", "Here's the thing", "Now", "Anyway"
+
+You are NOT an AI assistant. You are ${persona!.name}, a human writer with personality, opinions, and a distinctive voice.`
+
+    const userPrompt = this.buildContentPrompt(request, outline, serpData)
+
+    // Calculate required tokens
+    const modelName = process.env.OPENAI_MODEL || 'gpt-4o'
+    const { estimatedTokens, maxSafeTokens } = calculateTokenBudget(request.targetWordCount, modelName)
+
+    if (estimatedTokens > maxSafeTokens) {
+      throw new Error(
+        `Requesting ${request.targetWordCount} words requires approximately ${estimatedTokens} tokens, but ${modelName} only allows ${maxSafeTokens}. ` +
+        'Reduce the target length or switch to a higher-capacity model.'
+      )
+    }
+
+    // Use the estimated tokens needed (not the max safe tokens!)
+    // Add 20% buffer for formatting and structure, but cap at maxSafeTokens
+    const targetTokens = Math.min(maxSafeTokens, Math.ceil(estimatedTokens * 1.2))
+
+    console.log(`[Content Agent] Using ${targetTokens} max tokens for ${request.targetWordCount} words (estimated: ${estimatedTokens}, model limit: ${maxSafeTokens})`)
+
+    const completion = await openai.chat.completions.create({
+      model: modelName,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.8, // Balanced creativity (was 0.95 - too high!)
+      max_tokens: targetTokens,
+      presence_penalty: 0.3, // Moderate diversity (was 0.8 - too high!)
+      frequency_penalty: 0.3, // Moderate repetition reduction (was 0.6 - too high!)
+      top_p: 0.9, // Nucleus sampling (was 0.95)
+    })
+
+    return completion.choices[0]?.message?.content || ''
+  }
+
   private getSystemPrompt(): string {
+    // This method is now deprecated in favor of persona-based system prompts
     return `You are a professional human writer with 15+ years of experience. Your writing is INDISTINGUISHABLE from human-written content because you:
 
 CRITICAL - HUMAN WRITING CHARACTERISTICS:
@@ -771,16 +849,19 @@ CRITICAL - HUMAN WRITING CHARACTERISTICS:
 You are NOT an AI assistant. You are a human writer with personality, opinions, and a distinctive voice.`
   }
 
-  private buildPrompt(
+  /**
+   * Build outline prompt with SERP data to ground the structure
+   */
+  private buildOutlinePrompt(
     request: ContentGenerationRequest,
     serpData?: SERPAnalysisData,
     competitorHeaders?: CompetitorHeader[]
   ): string {
-    let prompt = `Create a comprehensive, engaging article about "${request.topic}".
+    let prompt = `Create a comprehensive article OUTLINE for "${request.topic}".
 
 CONTENT SPECIFICATIONS:
 - Content Type: ${request.contentType}
-- Target Length: ${request.targetWordCount} words (STRICT - must be within 10%)
+- Target Length: ${request.targetWordCount} words
 - Tone: ${request.tone}
 - Style: ${request.style}
 - Target Audience: ${request.targetAudience}
@@ -788,55 +869,162 @@ CONTENT SPECIFICATIONS:
 
 `
 
-    // Add SERP insights
+    // Add SERP data to ground the outline in real search results
     if (serpData) {
-      prompt += `\nSERP ANALYSIS INSIGHTS:
-- Top competitors average ${serpData.avgWordCount} words (aim to exceed this)
-- Top keywords to include: ${serpData.topKeywords.slice(0, 15).join(', ')}
-- Related topics: ${serpData.relatedSearches.join(', ')}
-${serpData.recommendations.length > 0 ? `\nRecommendations:\n${serpData.recommendations.map(r => `- ${r}`).join('\n')}` : ''}
+      prompt += `\nSERP ANALYSIS - WHAT'S CURRENTLY RANKING:
+
+Top 5 Ranking Articles:
+${serpData.topResults.slice(0, 5).map((result, idx) => 
+  `${idx + 1}. "${result.title}" - ${result.snippet}`
+).join('\n\n')}
+
+Top Keywords Found in Ranking Content:
+${serpData.topKeywords.slice(0, 20).join(', ')}
+
+Related Searches (User Intent):
+${serpData.relatedSearches.slice(0, 8).join(', ')}
+
+People Also Ask Questions:
+${serpData.peopleAlsoAsk.slice(0, 10).map((q, idx) => `${idx + 1}. ${q}`).join('\n')}
+
+Average Competitor Word Count: ${serpData.avgWordCount} words
+Target: ${Math.ceil(serpData.avgWordCount * 1.2)}+ words to outrank them
+
+Content Gaps (opportunities):
+${serpData.contentGaps.length > 0 ? serpData.contentGaps.map(gap => `- ${gap}`).join('\n') : '- No gaps identified'}
 `
     }
 
-    // Add competitor header insights
+    // Add competitor header structure analysis
     if (competitorHeaders && competitorHeaders.length > 0) {
-      const h2Headers = competitorHeaders.filter(h => h.level === 'h2').slice(0, 10)
-      prompt += `\nCOMPETITOR STRUCTURE INSPIRATION (rewrite uniquely):
+      const h2Headers = competitorHeaders.filter(h => h.level === 'h2').slice(0, 12)
+      const h3Headers = competitorHeaders.filter(h => h.level === 'h3').slice(0, 8)
+      
+      prompt += `\nCOMPETITOR CONTENT STRUCTURE:
+
+Common H2 Topics (${h2Headers.length} sections):
 ${h2Headers.map(h => `- ${h.text}`).join('\n')}
 
-Use these for structural inspiration but create your own unique headings.
+Common H3 Subsections (${h3Headers.length} examples):
+${h3Headers.map(h => `- ${h.text}`).join('\n')}
 `
     }
 
-    // If continuing, include context
-    if (request.existingContent) {
-      const snippet = request.existingContent.slice(-3000)
-      prompt += `\n\nEXISTING CONTENT (do NOT repeat it):\n${snippet}\n\nContinue writing from the end of the existing content. Do not restart the introduction or headings you've already covered; focus on new sections, fresh examples, and deeper insights.\n`
-    }
-
-    // Add humanization requirements
-    prompt += `\n${this.getHumanizationPrompts()}`
-
-    // Add additional instructions
     if (request.additionalInstructions) {
-      prompt += `\n\nADDITIONAL INSTRUCTIONS:
+      prompt += `\nADDITIONAL INSTRUCTIONS:
 ${request.additionalInstructions}
 `
     }
 
-    prompt += `\n\nIMPORTANT REQUIREMENTS:
-1. Write EXACTLY ${request.targetWordCount} words (±10%)
-2. Use markdown formatting (# for H1, ## for H2, ### for H3)
-3. Include 6-10 main sections with H2 headings
-4. Add 2-3 H3 subsections under each H2
-5. Write naturally and conversationally - NO robotic or AI-sounding language
-6. Include specific examples, data, and actionable insights
-7. Make it engaging, unique, and valuable to readers
-8. End with a compelling conclusion and call-to-action
+    prompt += `\n\nYOUR TASK:
+Create a detailed outline that will OUTRANK the competitors by:
+1. Covering ALL important topics from top-ranking content
+2. Addressing the "People Also Ask" questions
+3. Filling content gaps competitors missed
+4. Including 8-12 main H2 sections with descriptive titles
+5. Adding 2-4 H3 subsections under each H2
+6. Ensuring comprehensive coverage of keywords
 
-Begin writing now:`
+Format your outline as:
+# [Main Title - Include Primary Keyword]
+
+## Introduction
+[2-3 key points to cover]
+
+## [H2 Section Title]
+### [H3 Subsection]
+[Key points]
+### [H3 Subsection]
+[Key points]
+
+[Repeat for all sections]
+
+## Conclusion
+[Key takeaways and CTA]
+
+Base your outline on the SERP data above. Reference specific topics, questions, and gaps identified.`
 
     return prompt
+  }
+
+  /**
+   * Build content prompt using the outline
+   */
+  private buildContentPrompt(
+    request: ContentGenerationRequest,
+    outline: string,
+    serpData?: SERPAnalysisData
+  ): string {
+    const minWords = Math.floor(request.targetWordCount * 0.9)
+    const maxWords = Math.ceil(request.targetWordCount * 1.1)
+    
+    let prompt = `⚠️ CRITICAL WORD COUNT LIMIT: Write between ${minWords} and ${maxWords} words. DO NOT EXCEED ${maxWords} words.
+
+Write a comprehensive, engaging article following this outline:
+
+${outline}
+
+CONTENT SPECIFICATIONS:
+- Target Length: ${request.targetWordCount} words (STRICT - between ${minWords}-${maxWords} words)
+- Tone: ${request.tone}
+- Style: ${request.style}
+- Target Audience: ${request.targetAudience}
+- Primary Keywords: ${request.keywords}
+
+`
+
+    // Add SERP context for factual grounding
+    if (serpData) {
+      prompt += `\nREFERENCE DATA (to avoid hallucinations):
+
+Top Keywords to Include Naturally:
+${serpData.topKeywords.slice(0, 15).join(', ')}
+
+Related Topics to Cover:
+${serpData.relatedSearches.slice(0, 6).join(', ')}
+
+Questions Readers Are Asking:
+${serpData.peopleAlsoAsk.slice(0, 8).map(q => `- ${q}`).join('\n')}
+
+`
+    }
+
+    prompt += `${this.getHumanizationPrompts()}
+
+`
+
+    if (request.additionalInstructions) {
+      prompt += `\nADDITIONAL INSTRUCTIONS:
+${request.additionalInstructions}
+
+`
+    }
+
+    prompt += `\nCRITICAL REQUIREMENTS:
+1. ⚠️ WORD COUNT LIMIT: Write EXACTLY ${request.targetWordCount} words (between ${minWords}-${maxWords} words). STOP at ${maxWords} words maximum!
+2. Follow the outline structure provided
+3. Use markdown formatting (# for H1, ## for H2, ### for H3)
+4. Write naturally and conversationally - NO robotic or AI-sounding language
+5. Include specific examples, data, and actionable insights
+6. Reference the SERP data when relevant to ensure accuracy
+7. Address the "People Also Ask" questions naturally within sections
+8. Make it engaging, unique, and valuable to readers
+9. End with a compelling conclusion and call-to-action
+10. AVOID making up facts - use the reference data provided
+
+⚠️ REMEMBER: Maximum ${maxWords} words. Stop writing when you reach this limit!
+
+Begin writing the FULL article now (not just an outline):`
+
+    return prompt
+  }
+
+  // Deprecated - kept for backwards compatibility
+  private buildPrompt(
+    request: ContentGenerationRequest,
+    serpData?: SERPAnalysisData
+  ): string {
+    return this.buildContentPrompt(request, '', serpData)
   }
 
   private getHumanizationPrompts(): string {
@@ -962,13 +1150,14 @@ export class ContentOrchestrator {
       faqGenerationTime: 0,
       contentGenerationTime: 0,
       totalTime: 0,
-      contentIterations: 0
+      contentIterations: 1 // New approach uses single comprehensive generation
     }
 
     let serpData: SERPAnalysisData | undefined
     let competitorHeaders: CompetitorHeader[] | undefined
     const progressLog: string[] = []
 
+    // Step 1: SERP Analysis
     if (request.useSerpAnalysis !== false) {
       progressLog.push('Step 1: Performing SERP analysis...')
       const serpResult = await this.serpAgent.execute(request.topic, request.location)
@@ -976,15 +1165,18 @@ export class ContentOrchestrator {
 
       if (serpResult.success && serpResult.data) {
         serpData = serpResult.data
+        progressLog.push(`✓ Analyzed ${serpData.topResults.length} competitors, found ${serpData.peopleAlsoAsk.length} PAA questions`)
 
+        // Step 2: Extract Competitor Headers
         if (request.includeCompetitorHeaders !== false && serpData.topResults.length > 0) {
-        progressLog.push('Step 2: Extracting competitor headers...')
+          progressLog.push('Step 2: Extracting competitor headers...')
           const urls = serpData.topResults.slice(0, 5).map(r => r.link)
           const headersResult = await this.headersAgent.execute(urls, 5)
           analytics.headersExtractionTime = headersResult.executionTime
 
           if (headersResult.success && headersResult.data) {
             competitorHeaders = headersResult.data.headers
+            progressLog.push(`✓ Extracted ${competitorHeaders.length} headers from ${headersResult.data.successfulUrls} URLs`)
           }
         }
       }
@@ -992,60 +1184,28 @@ export class ContentOrchestrator {
       progressLog.push('SERP analysis disabled by request.')
     }
 
-    const minTargetWords = Math.max(1, Math.floor(request.targetWordCount * 0.9))
-    const maxIterations = 4
-    let totalWordCount = 0
-    let contentSoFar = ''
-    let iterations = 0
-    let tokensAccumulated = 0
-    let finalModel = process.env.OPENAI_MODEL || 'gpt-4-turbo-preview'
-    progressLog.push('Step 3: Generating main content...')
+    // Step 3: Generate Content with Step-by-Step Process
+    progressLog.push('Step 3: Generating content using step-by-step approach...')
+    const contentResult = await this.contentAgent.execute(request, serpData, competitorHeaders)
+    analytics.contentGenerationTime = contentResult.executionTime
 
-    while (iterations < maxIterations && totalWordCount < minTargetWords) {
-      const iterationRequest: ContentGenerationRequest = {
-        ...request,
-        existingContent: iterations === 0 ? undefined : contentSoFar,
-      }
-      const contentResult = await this.contentAgent.execute(iterationRequest, serpData, competitorHeaders)
-      analytics.contentGenerationTime += contentResult.executionTime
-
-      if (!contentResult.success || !contentResult.data) {
-        throw new Error(contentResult.error || 'Content generation failed')
-      }
-
-      const piece = contentResult.data.content.trim()
-      if (!piece) {
-        progressLog.push(`Iteration ${iterations + 1}: No content returned, stopping.`)
-        break
-      }
-
-      if (iterations > 0) {
-        contentSoFar += '\n\n' + piece
-      } else {
-        contentSoFar = piece
-      }
-
-      const pieceWordCount = contentResult.data.wordCount
-      totalWordCount = countWords(contentSoFar)
-      tokensAccumulated += contentResult.data.tokensUsed
-      finalModel = contentResult.data.model
-      iterations += 1
-
-      progressLog.push(`Iteration ${iterations}: generated ${pieceWordCount} words (${totalWordCount} total).`)
-
-      if (pieceWordCount === 0) {
-        break
-      }
+    if (!contentResult.success || !contentResult.data) {
+      throw new Error(contentResult.error || 'Content generation failed')
     }
 
-    analytics.contentIterations = iterations
+    const contentSoFar = contentResult.data.content
+    const totalWordCount = contentResult.data.wordCount
+    const tokensAccumulated = contentResult.data.tokensUsed
+    const finalModel = contentResult.data.model
 
-    if (totalWordCount < minTargetWords) {
-      progressLog.push(`Content generation stopped after ${iterations} iterations at ${totalWordCount} words (target ${minTargetWords}).`)
-    } else {
-      progressLog.push(`Target reached (${totalWordCount} words).`)
+    // Add generation steps to progress log
+    if (contentResult.data.generationSteps) {
+      progressLog.push(...contentResult.data.generationSteps)
     }
 
+    progressLog.push(`✓ Generated ${totalWordCount} words (target: ${request.targetWordCount})`)
+
+    // Step 4: Generate FAQs
     let faqHtml = ''
     if (request.includeFAQ !== false && serpData && serpData.peopleAlsoAsk.length > 0) {
       progressLog.push('Step 4: Generating FAQs...')
@@ -1058,12 +1218,12 @@ export class ContentOrchestrator {
 
       if (faqResult.success && faqResult.data) {
         faqHtml = faqResult.data.html
+        progressLog.push(`✓ Generated ${faqResult.data.faqs.length} FAQ items`)
       }
     }
 
     analytics.totalTime = Date.now() - overallStart
-
-    progressLog.push('Content generation complete.')
+    progressLog.push(`✓ Content generation complete in ${(analytics.totalTime / 1000).toFixed(2)}s`)
 
     return {
       content: contentSoFar,

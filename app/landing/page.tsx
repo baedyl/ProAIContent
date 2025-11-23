@@ -249,7 +249,7 @@ export default function LandingPage() {
               className="mb-12"
             >
               <Link
-                href="/register"
+                href="/dashboard"
                 className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/50 transition-all hover:shadow-xl hover:shadow-indigo-500/60 hover:scale-105"
               >
                 <FaRocket />

@@ -41,7 +41,7 @@ NEXTAUTH_SECRET=<generate-with-openssl-rand-base64-32>
 
 # OpenAI Configuration
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MODEL=gpt-4o
 
 # SerpAPI Configuration
 SERPAPI_KEY=...

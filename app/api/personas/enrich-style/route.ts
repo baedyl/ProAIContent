@@ -60,7 +60,7 @@ ${style}
 Generate an enriched version that is 2-3x more detailed and specific. Focus on making it actionable for someone trying to mimic this style. Output only the enriched description without any meta-commentary.`
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+      model: process.env.OPENAI_MODEL || 'gpt-4o',
       messages: [
         {
           role: 'system',

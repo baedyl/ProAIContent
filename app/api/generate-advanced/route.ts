@@ -75,7 +75,10 @@ export async function POST(request: NextRequest) {
       targetAudience: data.targetAudience,
       additionalInstructions: data.additionalInstructions,
       personaId: data.personaId,
-      location: data.location || 'us'
+      location: data.location || 'us',
+      includeFAQ: data.includeFAQ ?? false,
+      includeCompetitorHeaders: data.includeCompetitorHeaders ?? false,
+      useSerpAnalysis: data.useSerpAnalysis ?? false
     }
 
     // Initialize orchestrator and generate content
@@ -127,7 +130,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       content: finalContent,
       metadata: {
-        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+        model: process.env.OPENAI_MODEL || 'gpt-4o',
         timestamp: new Date().toISOString(),
         wordCount,
         targetWordCount,

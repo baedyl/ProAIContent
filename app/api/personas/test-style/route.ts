@@ -58,7 +58,7 @@ Generate sample text that clearly demonstrates ${name}'s unique writing characte
 Important: Only output the sample paragraphs. Do not include any meta-commentary, explanations, or labels.`
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+      model: process.env.OPENAI_MODEL || 'gpt-4o',
       messages: [
         {
           role: 'system',

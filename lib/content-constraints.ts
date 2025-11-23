@@ -8,6 +8,8 @@ export const WORD_COUNT_TOLERANCE = 0.2  // Increased from 0.1 (10%) to 0.2 (20%
 
 // Token limits by model (completion tokens only, not including prompt)
 const MODEL_TOKEN_LIMITS: Record<string, number> = {
+  'gpt-4o': 16384,
+  'gpt-4o-mini': 16384,
   'gpt-4-turbo-preview': 4096,
   'gpt-4-turbo': 4096,
   'gpt-4': 8192,
