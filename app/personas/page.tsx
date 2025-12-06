@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import Sidebar from '@/components/Sidebar'
-import ContentsManager from '@/components/ContentsManager'
+import PersonasManager from '@/components/PersonasManager'
 import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay'
 
 const fetcher = async (url: string) => {
@@ -15,7 +15,7 @@ const fetcher = async (url: string) => {
   return res.json()
 }
 
-export default function ContentsPage() {
+export default function PersonasPage() {
   const router = useRouter()
 
   const { data: balanceData, isLoading: balanceLoading } = useSWR('/api/credits/balance', fetcher)
@@ -41,30 +41,29 @@ export default function ContentsPage() {
       )}
       <div className="mx-auto flex flex-col gap-8 px-4 py-8 lg:flex-row lg:px-8">
         <aside className="lg:w-72 lg:flex-shrink-0">
-          <Sidebar 
-            activeSection="contents"
+          <Sidebar
+            activeSection="personas"
             creditsBalance={quickStats.balance}
             totalCreditsUsed={quickStats.totalCreditsUsed}
             totalContentsGenerated={quickStats.totalContentsGenerated}
             onSectionChange={(section) => {
               if (section === 'dashboard') {
                 router.push('/')
+              } else if (section === 'personas') {
+                // Already on personas page
               } else if (section === 'contents') {
-                // Already on contents page
+                router.push('/contents')
               } else if (section === 'projects') {
                 router.push('/projects')
-              } else if (section === 'personas') {
-                router.push('/personas')
               }
-            }} 
+            }}
           />
         </aside>
 
         <main className="flex-1 min-w-0 space-y-6">
-          <ContentsManager />
+          <PersonasManager />
         </main>
       </div>
     </div>
   )
 }
-

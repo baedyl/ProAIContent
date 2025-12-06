@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 import Sidebar from '@/components/Sidebar'
 import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay'
@@ -20,6 +20,7 @@ const fetcher = async (url: string) => {
 }
 
 export default function WorkspacePage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState<'dashboard' | 'contents' | 'projects' | 'personas' | 'generator'>('dashboard')
   const [activeContentType, setActiveContentType] = useState<string | null>(null)
@@ -95,8 +96,12 @@ export default function WorkspacePage() {
             onSectionChange={(section) => {
               if (section === 'dashboard') {
                 handleBackToDashboard()
-              } else {
-                setActiveSection(section as 'contents' | 'projects' | 'personas')
+              } else if (section === 'contents') {
+                router.push('/contents')
+              } else if (section === 'projects') {
+                router.push('/projects')
+              } else if (section === 'personas') {
+                router.push('/personas')
               }
             }} 
           />

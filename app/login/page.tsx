@@ -46,7 +46,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      await signIn('google', { callbackUrl: '/dashboard' })
+      await signIn('google', { callbackUrl: '/workspace' })
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to sign in with Google'
       toast.error(message)

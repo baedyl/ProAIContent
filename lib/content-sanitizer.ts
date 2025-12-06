@@ -30,9 +30,8 @@ const REFUSAL_PATTERNS = [
  */
 const CODE_BLOCK_PATTERNS = [
   /```(html|css|javascript|js|jsx|tsx|typescript|ts)\s*\n[\s\S]*?\n```/gi,
-  /<(html|head|body|div|span|style|script)[^>]*>[\s\S]*?<\/\1>/gi,
+  /<(html|head|body)[^>]*>[\s\S]*?<\/\1>/gi,
   /<!DOCTYPE\s+html>/gi,
-  /<style[^>]*>[\s\S]*?<\/style>/gi,
   /<script[^>]*>[\s\S]*?<\/script>/gi,
 ]
 
@@ -41,8 +40,7 @@ const CODE_BLOCK_PATTERNS = [
  */
 const CSS_PATTERNS = [
   /\{[^{}]*?(display|position|margin|padding|border|background|color|font|width|height):[^{}]*?\}/gi,
-  /\.[\w-]+\s*\{[\s\S]*?\}/g, // CSS class selectors
-  /#[\w-]+\s*\{[\s\S]*?\}/g, // CSS ID selectors
+  /#[\w-]+\s*\{[\s\S]*?\}/g, // CSS ID selectors (more aggressive)
   /@media\s+[^{]*\{[\s\S]*?\}/gi, // Media queries
   /@keyframes\s+[\w-]+\s*\{[\s\S]*?\}/gi, // Keyframe animations
 ]

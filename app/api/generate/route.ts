@@ -47,7 +47,7 @@ const generateSchema = z.object({
   maxWords: z.coerce.number().int().min(MIN_WORD_COUNT).max(MAX_WORD_COUNT).optional(),
   targetAudience: z.string().trim().optional(),
   additionalInstructions: z.string().trim().optional(),
-  personaId: z.string().trim().optional(),
+  personaId: z.string().trim().min(1, 'Persona is required for human-like content generation'),
   includeFAQ: z.boolean().optional(),
   includeVideo: z.boolean().optional(),
   includeCompetitorHeaders: z.boolean().optional(),
@@ -122,6 +122,23 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await request.json()
+    
+    // Enforce persona requirement
+    if (!payload.personaId) {
+      return NextResponse.json(
+        {
+          error: 'Persona selection is required',
+          message: 'Please select a writing persona to ensure human-like, authentic content that passes AI detection.',
+          suggestions: [
+            'Choose a persona that matches your content type',
+            'Personas help prevent hallucinations and improve content quality',
+            'Default personas are available if you\'re unsure'
+          ]
+        },
+        { status: 400 }
+      )
+    }
+    
     const parsed = generateSchema.safeParse(payload)
     if (!parsed.success) {
       return NextResponse.json(
@@ -287,9 +304,7 @@ ${video}
     const actualWordCount = countWords(finalContent)
     const attemptCount = 1
 
-    // More lenient validation: only reject if content is empty or extremely short (< 30% of requested)
-    const minimumAcceptableWords = Math.max(MIN_WORD_COUNT, Math.floor(targetWordCount * 0.3))
-    
+    // Strict validation: enforce user-specified word count range
     if (actualWordCount === 0) {
       return NextResponse.json(
         {
@@ -302,38 +317,43 @@ ${video}
           details: {
             attempts: attemptCount,
             lastWordCount: actualWordCount,
-            targetRange: `${lower}-${upper}`,
+            requestedRange: `${lower}-${upper}`,
           },
         },
         { status: 422 }
       )
     }
-    
-    // Log if content is outside tolerance but still acceptable
-    if (!isWithinTolerance(actualWordCount, lower, upper)) {
-      console.log(`Content word count (${actualWordCount}) outside tolerance range ${lower}-${upper}, but accepting it`)
-      
-      // Only warn if significantly off, but don't reject
-      if (actualWordCount < minimumAcceptableWords) {
-        console.warn(`Content word count (${actualWordCount}) below minimum ${minimumAcceptableWords}`)
-      }
-    }
 
-    const creditsToDeduct = actualWordCount
+    // Check if content is outside user's word count range
+    const isOutOfRange = !isWithinTolerance(actualWordCount, lower, upper)
+    let creditsToDeduct = 0
     let transaction: CreditTransactionRecord | null = null
 
+    if (isOutOfRange) {
+      console.warn(`Content word count (${actualWordCount}) outside user-requested range ${lower}-${upper}`)
+      
+      // Don't deduct credits for out-of-range content, but still provide it to the user
+      creditsToDeduct = 0
+    } else {
+      // Normal flow: deduct credits for content within range
+      creditsToDeduct = actualWordCount
+    }
+
     try {
-      transaction = await adjustUserCredits({
-        userId,
-        amount: -creditsToDeduct,
-        type: 'usage',
-        description: `Content generation: ${data.title || data.topic}`,
-        metadata: {
-          requestedWordCount: targetWordCount,
-          wordCountRange: { min: lower, max: upper },
-          actualWordCount,
-        },
-      })
+      // Only deduct credits if content is within the requested range
+      if (creditsToDeduct > 0) {
+        transaction = await adjustUserCredits({
+          userId,
+          amount: -creditsToDeduct,
+          type: 'usage',
+          description: `Content generation: ${data.title || data.topic}`,
+          metadata: {
+            requestedWordCount: targetWordCount,
+            requestedRange: { min: lower, max: upper },
+            actualWordCount,
+          },
+        })
+      }
 
       const settingsPayload = {
         tone: data.tone,
@@ -369,21 +389,23 @@ ${video}
         status: 'completed',
       })
 
-      const remainingCredits = transaction.balance_after ?? currentBalance - creditsToDeduct
+      const remainingCredits = transaction?.balance_after ?? currentBalance
 
       const response = NextResponse.json({
         content: finalContent,
         requestedWordCount: targetWordCount,
-        wordCountRange: { min: lower, max: upper },
+        requestedRange: { min: lower, max: upper },
         actualWordCount,
         attemptCount,
         creditsDeducted: creditsToDeduct,
         remainingCredits,
+        warning: isOutOfRange ? `Content (${actualWordCount} words) is outside your requested range (${lower}-${upper} words). No credits were deducted.` : undefined,
         metadata: {
           model: orchestratorResult.model,
           tokensUsed: orchestratorResult.tokensUsed,
-          transactionId: transaction.id,
+          transactionId: transaction?.id || null,
           contentId: savedContent.id,
+          personaUsed: data.personaId,
           rateLimit: {
             remaining: rateResult.remaining,
             reset: rateResult.reset,
@@ -418,7 +440,8 @@ ${video}
     } catch (error) {
       console.error('Error persisting generated content:', error)
 
-      if (transaction) {
+      // Only refund if we actually deducted credits
+      if (transaction && creditsToDeduct > 0) {
         try {
           await adjustUserCredits({
             userId,
@@ -433,7 +456,7 @@ ${video}
       }
 
       return NextResponse.json(
-        { error: 'Content generated but could not be saved. Credits refunded.' },
+        { error: 'Content generated but could not be saved.' },
         { status: 500 }
       )
     }

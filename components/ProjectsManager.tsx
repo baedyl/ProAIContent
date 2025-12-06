@@ -20,18 +20,19 @@ interface Project {
 
 interface ContentItem {
   id: string
-  project_id: string
+  project_id: string | null
   user_id: string
   title: string
-  content_type: string
-  status: string
-  is_published: boolean
-  published_at: string | null
   content: string
-  keywords: string | null
-  metadata: Record<string, unknown>
+  word_count: number
+  credits_used: number
+  requested_length: number
+  settings: Record<string, unknown>
+  status: string
+  retry_count: number
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -39,6 +40,7 @@ const STATUS_BADGE: Record<string, string> = {
   reviewing: 'bg-amber-100 text-amber-600',
   scheduled: 'bg-blue-100 text-blue-600',
   published: 'bg-emerald-100 text-emerald-600',
+  completed: 'bg-emerald-100 text-emerald-600',
 }
 
 interface ProjectModalProps {
@@ -172,13 +174,6 @@ function ProjectModal({ open, onClose, onSubmit, isSubmitting }: ProjectModalPro
   )
 }
 
-const CONTENT_TYPE_LABELS: Record<string, string> = {
-  blog: 'Article',
-  'product-review': 'Product sheet',
-  comparison: 'Comparison',
-  affiliate: 'Affiliate',
-}
-
 export default function ProjectsManager() {
   const [projects, setProjects] = useState<Project[]>([])
   const [allContents, setAllContents] = useState<ContentItem[]>([])
@@ -187,6 +182,14 @@ export default function ProjectsManager() {
   const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmittingModal, setIsSubmittingModal] = useState(false)
+
+  // Auto-select first project when projects change
+  useEffect(() => {
+    if (projects.length > 0 && !selectedProjectId) {
+      console.log('Auto-selecting first project:', projects[0].id)
+      setSelectedProjectId(projects[0].id)
+    }
+  }, [projects, selectedProjectId])
 
   const loadData = async () => {
     setIsLoading(true)
@@ -197,17 +200,24 @@ export default function ProjectsManager() {
         fetch('/api/contents'),
       ])
 
+      console.log('Projects response:', projectsRes.ok, projectsRes.status)
+      console.log('Contents response:', contentsRes.ok, contentsRes.status)
+
       if (projectsRes.ok) {
         const payload = await projectsRes.json()
-        setProjects(payload.projects || [])
-        if ((!selectedProjectId || !payload.projects?.some((project: Project) => project.id === selectedProjectId)) && payload.projects?.length) {
-          setSelectedProjectId(payload.projects[0].id)
-        }
+        console.log('Projects data:', payload)
+        const projectsData = payload.projects || []
+        setProjects(projectsData)
+      } else {
+        console.error('Projects API failed:', await projectsRes.text())
       }
 
       if (contentsRes.ok) {
         const payload = await contentsRes.json()
+        console.log('Contents data:', payload)
         setAllContents(payload.contents || [])
+      } else {
+        console.error('Contents API failed:', await contentsRes.text())
       }
     } catch (error) {
       console.error('Failed to load projects', error)
@@ -218,6 +228,7 @@ export default function ProjectsManager() {
   }
 
   useEffect(() => {
+    console.log('ProjectsManager mounted, loading data...')
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -233,6 +244,7 @@ export default function ProjectsManager() {
   )
 
   const filteredProjects = useMemo(() => {
+    console.log('Filtering projects:', projects.length, 'searchTerm:', searchTerm)
     if (!searchTerm) return projects
     return projects.filter((project) =>
       project.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -241,7 +253,9 @@ export default function ProjectsManager() {
 
   const contentCounts = useMemo(() => {
     return allContents.reduce<Record<string, number>>((acc, item) => {
-      acc[item.project_id] = (acc[item.project_id] || 0) + 1
+      if (item.project_id) {
+        acc[item.project_id] = (acc[item.project_id] || 0) + 1
+      }
       return acc
     }, {})
   }, [allContents])
@@ -432,6 +446,9 @@ export default function ProjectsManager() {
                 <div className="mt-1 text-sm text-slate-500">
                   {selectedProject.brief ? selectedProject.brief : 'No global brief defined for this project yet.'}
                 </div>
+                <div className="mt-2 text-xs text-slate-400">
+                  Debug: selectedProjectId={selectedProjectId}, projects count={projects.length}, contents count={allContents.length}
+                </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
                   {selectedProject.site_url && (
                     <a
@@ -466,15 +483,15 @@ export default function ProjectsManager() {
                 <h4 className="text-sm font-semibold text-slate-700">Project summary</h4>
                 <span className="text-xs text-slate-400">Last update {new Date(selectedProject.updated_at).toLocaleDateString()}</span>
               </div>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-400">Contents</div>
                   <div className="text-2xl font-semibold text-slate-900">{projectContents.length}</div>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-400">Published</div>
+                  <div className="text-xs text-slate-400">Completed</div>
                   <div className="text-2xl font-semibold text-slate-900">
-                    {projectContents.filter((item) => item.is_published).length}
+                    {projectContents.filter((item) => item.status === 'completed').length}
                   </div>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
@@ -506,7 +523,7 @@ export default function ProjectsManager() {
                     <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
                       <tr>
                         <th className="px-6 py-3 text-left font-semibold">Title</th>
-                        <th className="px-6 py-3 text-left font-semibold">Type</th>
+                        <th className="px-6 py-3 text-left font-semibold">Words</th>
                         <th className="px-6 py-3 text-left font-semibold">Status</th>
                         <th className="px-6 py-3 text-left font-semibold">Updated</th>
                         <th className="px-6 py-3 text-right font-semibold">Actions</th>
@@ -517,12 +534,12 @@ export default function ProjectsManager() {
                         <tr key={item.id} className="hover:bg-indigo-50/40">
                           <td className="px-6 py-4">
                             <div className="font-medium text-slate-900">{item.title}</div>
-                            {item.keywords && (
-                              <div className="text-xs text-slate-400">{item.keywords}</div>
+                            {item.settings && typeof item.settings === 'object' && 'keywords' in item.settings && typeof item.settings.keywords === 'string' && (
+                              <div className="text-xs text-slate-400">{item.settings.keywords}</div>
                             )}
                           </td>
                           <td className="px-6 py-4 text-slate-500">
-                            {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
+                            {item.word_count}
                           </td>
                           <td className="px-6 py-4">
                             <span

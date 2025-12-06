@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import type { Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getUserSettings, createDefaultUserSettings, updateUserSettings } from '@/lib/supabase'
+import { getUserSettings, createDefaultUserSettings, updateUserSettings, deleteUserAccount } from '@/lib/supabase'
 
 /**
  * GET - Fetch user settings
@@ -31,6 +31,44 @@ export async function GET() {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An error occurred while fetching settings'
     console.error('Settings GET error:', message)
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE - Delete user account and all related data
+ */
+export async function DELETE() {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = await getServerSession(authOptions as any) as Session | null
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Delete all user data
+    const result = await deleteUserAccount(session.user.id)
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Failed to delete account' },
+        { status: 500 }
+      )
+    }
+
+    // Return success response
+    return NextResponse.json({ 
+      message: 'Account deleted successfully',
+      success: true 
+    })
+
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An error occurred while deleting account'
+    console.error('Account deletion error:', message)
     return NextResponse.json(
       { error: message },
       { status: 500 }

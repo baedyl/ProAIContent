@@ -23,8 +23,8 @@ interface AdvancedGenerateRequest {
   length: string
   targetAudience: string
   additionalInstructions: string
-  // Advanced options
-  personaId?: string
+  // Advanced options - personaId is now REQUIRED
+  personaId: string  // REQUIRED for human-like content
   useSerpAnalysis?: boolean
   includeCompetitorHeaders?: boolean
   includeFAQ?: boolean
@@ -46,6 +46,22 @@ export async function POST(request: NextRequest) {
     if (!data.topic) {
       return NextResponse.json(
         { error: 'Topic is required' },
+        { status: 400 }
+      )
+    }
+
+    // Enforce persona requirement for human-like content
+    if (!data.personaId) {
+      return NextResponse.json(
+        {
+          error: 'Persona selection is required',
+          message: 'Please select a writing persona to ensure human-like, authentic content that passes AI detection.',
+          suggestions: [
+            'Choose a persona that matches your content type and audience',
+            'Personas help prevent hallucinations and improve content authenticity',
+            'Browse available personas in the Personas Manager'
+          ]
+        },
         { status: 400 }
       )
     }
@@ -144,7 +160,8 @@ export async function POST(request: NextRequest) {
         } : null,
         faqGenerated: result.faqHtml.length > 0,
         videoIncluded: videoEmbed.length > 0,
-        personaUsed: data.personaId || null,
+        personaUsed: data.personaId,
+        personaEnforced: true,
         analytics: result.analytics
       }
     })
