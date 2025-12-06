@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -11,17 +11,43 @@ import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+      router.push(callbackUrl)
+    }
+  }, [status, session, router, searchParams])
+
+  // Show loading while checking authentication status
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+        <div className="loading-dots text-primary-600 text-2xl">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
+      // Get callback URL from search params
+      const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/dashboard'
+      
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
@@ -32,7 +58,7 @@ export default function LoginPage() {
         toast.error('Invalid email or password')
       } else if (result?.ok) {
         toast.success('Welcome back!')
-        router.push('/dashboard')
+        router.push(callbackUrl)
         router.refresh()
       }
     } catch (error: unknown) {
