@@ -35,12 +35,12 @@ export function generateFAQHTML(faqs: FAQItem[]): FAQSchema {
   `).join('\n')
 
   const html = `
-<section class="faq-section">
-  <h2>Frequently Asked Questions</h2>
-  <div itemscope itemtype="https://schema.org/FAQPage" class="faq-container">
+<div class="faq-section" itemscope itemtype="https://schema.org/FAQPage">
+  <h2 class="faq-title">Frequently Asked Questions</h2>
+  <div class="faq-container">
     ${faqItems}
   </div>
-</section>
+</div>
   `.trim()
 
   // Generate schema.org JSON-LD
@@ -144,60 +144,6 @@ export function parseFAQResponse(response: string): FAQItem[] {
  * Generate FAQ CSS styles
  */
 export function getFAQStyles(): string {
-  return `
-<style>
-.faq-section {
-  margin: 2rem 0;
-  padding: 2rem;
-  background: #f9fafb;
-  border-radius: 12px;
-}
-
-.faq-section h2 {
-  font-size: 1.875rem;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-}
-
-.faq-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.faq-item {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.faq-question {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.75rem;
-}
-
-.faq-answer {
-  font-size: 1rem;
-  line-height: 1.75;
-  color: #4b5563;
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .faq-section {
-    padding: 1.5rem;
-  }
-  
-  .faq-question {
-    font-size: 1.125rem;
-  }
-}
-</style>
-  `.trim()
+  return `<style>.faq-section{margin:2rem 0;padding:2rem;background:#f8f9fa;border-radius:12px;border:1px solid #e9ecef}.faq-title{font-size:1.5rem;font-weight:700;color:#2c3e50;margin-bottom:1.5rem;text-align:center}.faq-container{display:flex;flex-direction:column;gap:1.5rem}.faq-item{background:white;padding:1.5rem;border-radius:8px;border-left:4px solid #007bff;box-shadow:0 2px 4px rgba(0,0,0,0.1)}.faq-question{font-size:1.1rem;font-weight:600;color:#2c3e50;margin-bottom:0.75rem;line-height:1.4}.faq-answer p{margin:0;color:#555;line-height:1.6}@media (max-width:768px){.faq-section{padding:1.5rem;margin:1.5rem 0}.faq-title{font-size:1.25rem}}</style>`.trim()
 }
 

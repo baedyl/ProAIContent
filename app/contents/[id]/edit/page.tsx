@@ -153,25 +153,29 @@ export default function EditContentPage() {
             totalCreditsUsed={quickStats.totalCreditsUsed}
             totalContentsGenerated={quickStats.totalContentsGenerated}
             onSectionChange={(section) => {
-              if (hasUnsavedChanges) {
-                if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+                if (hasUnsavedChanges) {
+                  if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+                    if (section === 'dashboard') {
+                      router.push('/')
+                    } else if (section === 'contents') {
+                      router.push('/contents')
+                    } else if (section === 'projects') {
+                      router.push('/projects')
+                    } else if (section === 'personas') {
+                      router.push('/personas')
+                    }
+                  }
+                } else {
                   if (section === 'dashboard') {
                     router.push('/')
                   } else if (section === 'contents') {
                     router.push('/contents')
-                  } else if (section === 'projects' || section === 'personas') {
-                    router.push(`/?section=${section}`)
+                  } else if (section === 'projects') {
+                    router.push('/projects')
+                  } else if (section === 'personas') {
+                    router.push('/personas')
                   }
                 }
-              } else {
-                if (section === 'dashboard') {
-                  router.push('/')
-                } else if (section === 'contents') {
-                  router.push('/contents')
-                } else if (section === 'projects' || section === 'personas') {
-                  router.push(`/?section=${section}`)
-                }
-              }
             }} 
           />
         </aside>

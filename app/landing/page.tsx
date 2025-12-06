@@ -206,7 +206,7 @@ export default function LandingPage() {
           <div className="absolute top-60 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
         </div>
 
-        <div className="relative container mx-auto px-4 py-20 lg:py-32">
+        <div className="relative container mx-auto px-4 py-20">
           {/* Update Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

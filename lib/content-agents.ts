@@ -590,48 +590,26 @@ A: [answer]
     if (faqs.length === 0) return ''
 
     const faqItems = faqs.map(faq => `
-  <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-    <h3 class="faq-question" itemprop="name">${this.escapeHtml(faq.question)}</h3>
-    <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-      <p itemprop="text">${this.escapeHtml(faq.answer)}</p>
-    </div>
-  </div>`).join('\n')
+    <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+      <h3 class="faq-question" itemprop="name">${this.escapeHtml(faq.question)}</h3>
+      <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+        <p itemprop="text">${this.escapeHtml(faq.answer)}</p>
+      </div>
+    </div>`).join('')
 
-    return `
-## Frequently Asked Questions
-
-<div class="faq-container" itemscope itemtype="https://schema.org/FAQPage">
-${faqItems}
+    return `<div class="faq-section" itemscope itemtype="https://schema.org/FAQPage">
+  <h2 class="faq-title">Frequently Asked Questions</h2>
+  <div class="faq-container">${faqItems}
+  </div>
 </div>
-
 <style>
-.faq-container {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-.faq-item {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-}
-.faq-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-.faq-question {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.75rem;
-}
-.faq-answer p {
-  margin: 0;
-  color: #555;
-  line-height: 1.6;
-}
+.faq-section{margin:2rem 0;padding:2rem;background:#f8f9fa;border-radius:12px;border:1px solid #e9ecef}
+.faq-title{font-size:1.5rem;font-weight:700;color:#2c3e50;margin-bottom:1.5rem;text-align:center}
+.faq-container{display:flex;flex-direction:column;gap:1.5rem}
+.faq-item{background:white;padding:1.5rem;border-radius:8px;border-left:4px solid #007bff;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.faq-question{font-size:1.1rem;font-weight:600;color:#2c3e50;margin-bottom:0.75rem;line-height:1.4}
+.faq-answer p{margin:0;color:#555;line-height:1.6}
+@media (max-width:768px){.faq-section{padding:1.5rem;margin:1.5rem 0}.faq-title{font-size:1.25rem}}
 </style>`
   }
 
@@ -666,6 +644,7 @@ export class ContentGenerationAgent {
     model: string
     tokensUsed: number
     generationSteps: string[]
+    personaUsed: string
   }>> {
     const startTime = Date.now()
     const generationSteps: string[] = []
@@ -673,10 +652,19 @@ export class ContentGenerationAgent {
     try {
       console.log(`[Content Agent] Generating ${request.targetWordCount} word article on "${request.topic}"`)
       
-      // Load persona
+      // Load persona - MANDATORY for human-like content
       const { getPersona } = await import('./personas')
-      const persona = getPersona(request.personaId || 'default')
-      generationSteps.push(`Using persona: ${persona.name}`)
+      
+      // If no persona specified, throw error instead of defaulting
+      if (!request.personaId) {
+        throw new Error('Persona is required for content generation. Please select a writing persona to ensure human-like, authentic content.')
+      }
+      
+      const persona = getPersona(request.personaId)
+      generationSteps.push(`✓ Persona: ${persona.name} (${persona.description})`)
+      
+      // Validate persona expertise matches content type
+      this.validatePersonaFit(persona, request)
 
       // Step 1: Generate Research Summary & Outline
       generationSteps.push('Step 1: Creating research-based outline...')
@@ -707,7 +695,8 @@ export class ContentGenerationAgent {
           wordCount,
           model: process.env.OPENAI_MODEL || 'gpt-4o',
           tokensUsed: 0, // Will be summed from individual steps
-          generationSteps
+          generationSteps,
+          personaUsed: persona.id
         },
         executionTime: Date.now() - startTime
       }
@@ -719,6 +708,26 @@ export class ContentGenerationAgent {
         error: message,
         executionTime: Date.now() - startTime
       }
+    }
+  }
+
+  /**
+   * Validate that the persona is appropriate for the content type
+   */
+  private validatePersonaFit(persona: Persona, request: ContentGenerationRequest): void {
+    // Log validation for transparency
+    console.log(`[Content Agent] Validating persona fit: ${persona.name} for ${request.contentType}`)
+    
+    // Add warnings if persona seems mismatched but allow generation
+    const contentTypeLower = request.contentType.toLowerCase()
+    const expertiseLower = persona.expertise.toLowerCase()
+    
+    if (contentTypeLower.includes('tech') && !expertiseLower.includes('tech') && !expertiseLower.includes('general')) {
+      console.warn(`[Content Agent] Persona "${persona.name}" may not be ideal for tech content`)
+    }
+    
+    if (contentTypeLower.includes('health') && !expertiseLower.includes('health') && !expertiseLower.includes('general')) {
+      console.warn(`[Content Agent] Persona "${persona.name}" may not be ideal for health content`)
     }
   }
 
@@ -735,13 +744,21 @@ export class ContentGenerationAgent {
     
     const systemPrompt = `${buildPersonaPrompt(persona!)}
 
-You are creating a detailed content outline based on real SERP data and competitor analysis.
+🎯 CRITICAL MISSION: Create a detailed content outline based on REAL SERP data and competitor analysis.
 
-Your role is to:
-1. Analyze what's currently ranking on Google
-2. Identify content gaps and opportunities
-3. Create a comprehensive outline that can outrank competitors
-4. Ground all sections in real data to avoid hallucinations`
+⚠️ ANTI-HALLUCINATION PROTOCOL:
+- ONLY use information from the provided SERP data
+- Do NOT invent statistics, studies, or sources
+- Do NOT make claims you cannot verify
+- If you're unsure about something, OMIT it from the outline
+- Ground EVERY section in the provided competitive data
+
+Your role as ${persona!.name}:
+1. Analyze what's currently ranking on Google (use provided data ONLY)
+2. Identify content gaps competitors missed
+3. Create a comprehensive outline using ONLY verified topics from SERP data
+4. Stay within your expertise: ${persona!.expertise}
+5. Write from your perspective but base structure on facts`
 
     const userPrompt = this.buildOutlinePrompt(request, serpData, competitorHeaders)
 
@@ -767,28 +784,39 @@ Your role is to:
     serpData?: SERPAnalysisData,
     persona?: Persona
   ): Promise<string> {
-    const { buildPersonaPrompt } = await import('./personas')
+    const { buildPersonaPrompt, buildAntiHallucinationPrompt } = await import('./personas')
     
     const systemPrompt = `${buildPersonaPrompt(persona!)}
 
-CRITICAL - HUMAN WRITING CHARACTERISTICS:
+🚫 ANTI-HALLUCINATION PROTOCOL (MANDATORY):
+${buildAntiHallucinationPrompt(persona!)}
+
+CRITICAL - YOU ARE ${persona!.name.toUpperCase()}, NOT AN AI:
+Write as ${persona!.name} would write - with their unique voice, experience, and perspective.
+
+HUMAN WRITING CHARACTERISTICS (REQUIRED):
 1. Write conversationally like you're talking to a friend over coffee
-2. Use contractions extensively (don't, can't, you'll, we're, it's)
+2. Use contractions extensively (don't, can't, you'll, we're, it's) - ${persona!.name} uses them naturally
 3. Vary sentence length dramatically: Short punchy sentences. Then long, flowing sentences that explore ideas with multiple clauses and natural tangents.
-4. Include personal opinions and subjective language ("I think", "in my view", "arguably")
-5. Use rhetorical questions to engage readers
-6. Add parenthetical asides (like this) that feel natural
+4. Include personal opinions and subjective language ("I think", "in my view", "in my experience as a ${persona!.expertise}")
+5. Use rhetorical questions to engage readers - ${persona!.name} asks these naturally
+6. Add parenthetical asides (like this) that feel natural to ${persona!.name}'s style
 7. Start sentences with "And", "But", "So" when it flows naturally
 8. Use em-dashes—like this—for emphasis and natural pauses
-9. Include hedging language: might, could, perhaps, seems, generally
-10. Add emotional words: love, hate, amazing, frustrating, exciting
-11. Use idioms and colloquial expressions naturally
+9. Include hedging language: might, could, perhaps, seems, generally (${persona!.name} isn't all-knowing)
+10. Add emotional words that ${persona!.name} would use: ${this.getPersonaEmotionalWords(persona!)}
+11. Use idioms and colloquial expressions naturally - speak as ${persona!.name} would
 12. Vary paragraph length: one-sentence paragraphs for emphasis, then longer analytical paragraphs
-13. Include specific details and numbers (not just round numbers)
-14. Express uncertainty and nuance when appropriate
-15. Use transitions that sound conversational: "Look", "Here's the thing", "Now", "Anyway"
+13. Include specific details from your experience, but NEVER invent statistics or sources
+14. Express uncertainty and nuance when appropriate - ${persona!.name} is honest about limitations
+15. Use transitions that sound conversational: "Look", "Here's the thing", "Now", "Anyway", "You know what?"
 
-You are NOT an AI assistant. You are ${persona!.name}, a human writer with personality, opinions, and a distinctive voice.`
+PERSONALITY INTEGRATION:
+- Tone: ${persona!.tone}
+- Style: ${persona!.writingStyle}
+- Target Audience: ${persona!.audience}
+
+You are NOT an AI assistant. You are ${persona!.name}, a real human with ${persona!.expertise}. Write as yourself, with your personality, quirks, and authentic voice.`
 
     const userPrompt = this.buildContentPrompt(request, outline, serpData)
 
@@ -955,21 +983,35 @@ Base your outline on the SERP data above. Reference specific topics, questions, 
     outline: string,
     serpData?: SERPAnalysisData
   ): string {
-    const minWords = Math.floor(request.targetWordCount * 0.9)
-    const maxWords = Math.ceil(request.targetWordCount * 1.1)
-    
-    let prompt = `⚠️ CRITICAL WORD COUNT LIMIT: Write between ${minWords} and ${maxWords} words. DO NOT EXCEED ${maxWords} words.
+    let prompt = `⚠️ CRITICAL REQUIREMENTS - FOLLOW EXACTLY:
 
 Write a comprehensive, engaging article following this outline:
 
 ${outline}
 
 CONTENT SPECIFICATIONS:
-- Target Length: ${request.targetWordCount} words (STRICT - between ${minWords}-${maxWords} words)
 - Tone: ${request.tone}
 - Style: ${request.style}
 - Target Audience: ${request.targetAudience}
 - Primary Keywords: ${request.keywords}
+
+🚫 MANDATORY ANTI-HALLUCINATION REQUIREMENTS:
+1. DO NOT invent: statistics, studies, research papers, expert names, specific dates, survey results
+2. DO NOT cite: "According to [study]", "Research shows", "A 2024 report found"
+3. DO USE: General knowledge, common understanding, industry best practices
+4. DO QUALIFY uncertain claims: "typically", "often", "many experts suggest", "it's commonly understood"
+5. DO express personal experience naturally: "I've seen", "In my experience", "From what I know"
+6. DO admit limitations: "This can vary", "It depends on", "Different scenarios may require"
+7. DO NOT make absolute claims unless universally true
+8. DO focus on practical, verifiable advice based on common knowledge
+
+ACCURACY & FACTUALITY REQUIREMENTS:
+- Write from your personal expertise and experience ONLY
+- Use general knowledge and common sense, NOT invented sources
+- If you're uncertain about a fact, either skip it or heavily qualify it
+- Speak in first person when appropriate to ground statements in experience
+- Avoid specific numbers unless they're commonly known (e.g., "24 hours in a day" is fine)
+- Focus on practical advice, opinions, and observations rather than data claims
 
 `
 
@@ -1001,18 +1043,29 @@ ${request.additionalInstructions}
     }
 
     prompt += `\nCRITICAL REQUIREMENTS:
-1. ⚠️ WORD COUNT LIMIT: Write EXACTLY ${request.targetWordCount} words (between ${minWords}-${maxWords} words). STOP at ${maxWords} words maximum!
-2. Follow the outline structure provided
-3. Use markdown formatting (# for H1, ## for H2, ### for H3)
-4. Write naturally and conversationally - NO robotic or AI-sounding language
-5. Include specific examples, data, and actionable insights
-6. Reference the SERP data when relevant to ensure accuracy
-7. Address the "People Also Ask" questions naturally within sections
-8. Make it engaging, unique, and valuable to readers
-9. End with a compelling conclusion and call-to-action
-10. AVOID making up facts - use the reference data provided
+1. Follow the outline structure provided exactly
+2. Use markdown formatting (# for H1, ## for H2, ### for H3)
+3. Write naturally and conversationally - NO robotic or AI-sounding language
+4. Include specific examples from general knowledge and practical insights
+5. Use the SERP topics as a guide, but express them in your own voice
+6. Address the "People Also Ask" questions naturally within sections using your expertise
+7. Make it engaging, unique, and valuable to readers
+8. End with a compelling conclusion and call-to-action
+9. 🚫 CRITICAL: NO HALLUCINATIONS
+   - Write ONLY from your expertise and general knowledge
+   - Do NOT invent statistics, studies, or specific sources
+   - Use honest qualifiers: "in my experience", "typically", "often", "it seems"
+   - Express opinions, not fabricated facts
+   - If uncertain, skip it or acknowledge the uncertainty
 
-⚠️ REMEMBER: Maximum ${maxWords} words. Stop writing when you reach this limit!
+⚠️ ABSOLUTELY CRITICAL WORD COUNT LIMIT:
+- Target exactly: ${request.targetWordCount} words
+- Absolute maximum: ${Math.ceil(request.targetWordCount * 1.1)} words
+- STOP WRITING immediately when you reach the word limit
+- Count your words as you write and stop precisely at the limit
+- Do NOT write even one more sentence after reaching the word count
+
+📝 REMEMBER: You are writing as a human expert with real experience. Share your knowledge, opinions, and insights authentically. Don't pretend to know things you don't. Be honest, conversational, and valuable.
 
 Begin writing the FULL article now (not just an outline):`
 
@@ -1107,6 +1160,29 @@ EMOTION & PERSONALITY:
     humanized = humanized.replace(/\n\n\n+/g, '\n\n')
 
     return humanized.trim()
+  }
+
+  /**
+   * Get emotional words appropriate for the persona
+   */
+  private getPersonaEmotionalWords(persona: Persona): string {
+    const toneWords: Record<string, string> = {
+      'professional': 'impressed, concerned, pleased, disappointed, confident',
+      'conversational': 'love, hate, amazing, frustrating, exciting',
+      'authoritative': 'essential, critical, significant, notable, important',
+      'casual': 'awesome, terrible, great, awful, cool',
+      'caring': 'wonderful, heartbreaking, touching, concerning, uplifting',
+      'humorous': 'hilarious, ridiculous, absurd, entertaining, amusing'
+    }
+    
+    const tone = persona.tone.toLowerCase()
+    for (const [key, words] of Object.entries(toneWords)) {
+      if (tone.includes(key)) {
+        return words
+      }
+    }
+    
+    return 'interesting, notable, significant, important, valuable'
   }
 }
 

@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { FaSave, FaUser, FaCog } from 'react-icons/fa'
+import { FaSave, FaUser, FaCog, FaTrash } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 import { getAllPersonas } from '@/lib/personas'
 
@@ -32,6 +32,9 @@ export default function SettingsPage() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const personas = getAllPersonas()
 
   useEffect(() => {
@@ -77,6 +80,36 @@ export default function SettingsPage() {
       toast.error('An error occurred')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      toast.error('Please type "DELETE" to confirm account deletion')
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Account deleted successfully')
+        // Sign out the user and redirect to login
+        await signOut({ callbackUrl: '/login' })
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Failed to delete account')
+      }
+    } catch (error: unknown) {
+      console.error('Account deletion error:', error)
+      toast.error('An error occurred while deleting account')
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
+      setDeleteConfirmText('')
     }
   }
 
@@ -126,6 +159,21 @@ export default function SettingsPage() {
                   disabled
                   className="input-field bg-gray-100 cursor-not-allowed"
                 />
+              </div>
+              
+              {/* Delete Account Section */}
+              <div className="pt-6 border-t border-slate-200">
+                <h3 className="text-lg font-semibold text-red-600 mb-2">Delete Account</h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="btn-danger flex items-center gap-2"
+                >
+                  <FaTrash />
+                  Delete Account
+                </button>
               </div>
             </div>
           </div>
@@ -223,6 +271,71 @@ export default function SettingsPage() {
             </button>
           </div>
         </motion.div>
+
+        {/* Delete Account Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4"
+            >
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                  <FaTrash className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Delete Account
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  This action cannot be undone. This will permanently delete your account and all associated data.
+                </p>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type <span className="font-mono bg-gray-100 px-1 rounded">DELETE</span> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    className="input-field w-full"
+                    placeholder="Type DELETE to confirm"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(false)
+                      setDeleteConfirmText('')
+                    }}
+                    className="btn-secondary flex-1"
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                    className="btn-danger flex-1 flex items-center justify-center gap-2"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <FaTrash />
+                        Delete Account
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
     </div>
   )
 }
