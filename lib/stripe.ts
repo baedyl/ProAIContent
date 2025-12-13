@@ -23,22 +23,22 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     id: 'starter',
     name: 'Starter',
     description: 'Perfect for testing ideas and small campaigns',
-    amountCents: 999,
-    credits: 50_000,
+    amountCents: 1000, // $10.00 (20 credits × $0.50)
+    credits: 20, // 20 credits (20 articles)
   },
   {
     id: 'pro',
     name: 'Pro',
     description: 'Ideal for growing teams with consistent content needs',
-    amountCents: 2499,
-    credits: 150_000,
+    amountCents: 2500, // $25.00 (50 credits × $0.50)
+    credits: 50, // 50 credits (50 articles)
   },
   {
     id: 'business',
     name: 'Business',
     description: 'High volume bundle engineered for agencies and batch workflows',
-    amountCents: 4999,
-    credits: 350_000,
+    amountCents: 5000, // $50.00 (100 credits × $0.50)
+    credits: 100, // 100 credits (100 articles)
   },
 ]
 

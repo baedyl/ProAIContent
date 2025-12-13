@@ -14,7 +14,6 @@ import {
   MIN_WORD_COUNT,
   MAX_WORD_COUNT,
   calculateBounds,
-  isWithinTolerance,
   countWords,
 } from '@/lib/content-constraints'
 import { searchYouTubeVideo } from '@/lib/serp-analysis'
@@ -181,13 +180,15 @@ export async function POST(request: NextRequest) {
     }
 
     const currentBalance = await getUserCreditBalance(userId)
-    const maximumPotentialCost = upper
-    if (currentBalance < maximumPotentialCost) {
+    // New system: always check for at least 1 credit (base cost)
+    const requiredCredits = 1
+    if (currentBalance < requiredCredits) {
       return NextResponse.json(
         {
           error: 'Insufficient credits. Please top up your balance.',
           currentBalance,
-          requiredCredits: maximumPotentialCost,
+          requiredCredits,
+          message: 'You need at least 1 credit to generate an article.',
         },
         { status: 402 }
       )
@@ -324,20 +325,23 @@ ${video}
       )
     }
 
-    // Check if content is outside user's word count range
-    const isOutOfRange = !isWithinTolerance(actualWordCount, lower, upper)
-    let creditsToDeduct = 0
+    // New credit system: 1 credit = 1 article generation, advanced features = 0.5 credits each
+    let creditsToDeduct = 1 // Base cost for article generation
     let transaction: CreditTransactionRecord | null = null
 
-    if (isOutOfRange) {
-      console.warn(`Content word count (${actualWordCount}) outside user-requested range ${lower}-${upper}`)
-      
-      // Don't deduct credits for out-of-range content, but still provide it to the user
-      creditsToDeduct = 0
-    } else {
-      // Normal flow: deduct credits for content within range
-      creditsToDeduct = actualWordCount
+    // Add cost for advanced features (0.5 credits each)
+    const advancedFeatures = [
+      data.includeFAQ && orchestratorResult.faqHtml,
+      data.includeVideo,
+      data.useSerpAnalysis,
+      data.includeCompetitorHeaders
+    ].filter(Boolean).length
+
+    if (advancedFeatures > 0) {
+      creditsToDeduct += advancedFeatures * 0.5
     }
+
+    console.log(`Credits to deduct: ${creditsToDeduct} (1 base + ${advancedFeatures * 0.5} for advanced features)`)
 
     try {
       // Only deduct credits if content is within the requested range
@@ -399,7 +403,7 @@ ${video}
         attemptCount,
         creditsDeducted: creditsToDeduct,
         remainingCredits,
-        warning: isOutOfRange ? `Content (${actualWordCount} words) is outside your requested range (${lower}-${upper} words). No credits were deducted.` : undefined,
+        warning: `Article generated successfully. Credits used: ${creditsToDeduct} (1 base + ${advancedFeatures * 0.5} for ${advancedFeatures} advanced feature${advancedFeatures !== 1 ? 's' : ''})`,
         metadata: {
           model: orchestratorResult.model,
           tokensUsed: orchestratorResult.tokensUsed,

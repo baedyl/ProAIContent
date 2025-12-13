@@ -154,6 +154,14 @@ export default function BuyCreditsPage() {
           <p className="max-w-3xl text-sm text-slate-600">
             Choose the package that fits your publishing cadence. Credits never expire and apply instantly after purchase.
           </p>
+          <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <h3 className="font-semibold text-blue-900 mb-2">How Credits Work:</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• <strong>1 credit</strong> = 1 article generation</li>
+              <li>• <strong>Advanced features</strong> = 0.5 credits each</li>
+              <li>• <strong>Cost per credit</strong> = $0.50 (excluding VAT)</li>
+            </ul>
+          </div>
         </section>
 
         <section className="max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -274,6 +282,12 @@ function PackageCard({ name, description, credits, amountCents, onSelect, isProc
       <div className="mt-4 space-y-2 text-sm text-slate-600">
         <div className="flex items-center gap-2">
           <FiCheckCircle className="text-indigo-500" /> {credits.toLocaleString()} credits
+        </div>
+        <div className="flex items-center gap-2">
+          <FiCheckCircle className="text-indigo-500" /> {credits} article generations
+        </div>
+        <div className="flex items-center gap-2">
+          <FiCheckCircle className="text-indigo-500" /> Advanced features: {credits * 2} uses (0.5 credits each)
         </div>
         <div className="flex items-center gap-2">
           <FiCheckCircle className="text-indigo-500" /> Instant top-up after payment
